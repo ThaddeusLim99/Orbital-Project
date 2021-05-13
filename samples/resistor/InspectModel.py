@@ -1,4 +1,4 @@
-#Runs a trained model, evaluating an image from val then saving it as a .jpg
+#Runs a trained model, evaluating an image from val then saving it as a .jpg and saves
 
 import os
 import sys
@@ -75,8 +75,7 @@ print("Images: {}\nClasses: {}".format(len(dataset.image_ids), dataset.class_nam
 
 # Create model in inference mode
 with tf.device(DEVICE):
-    model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR,
-                              config=config)
+    model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
 
 #LOAD MODEL
 #TODO - update path
@@ -87,7 +86,7 @@ print("Loading weights ", weights_path)
 model.load_weights(weights_path, by_name=True)
 
 #RUN DETECTION
-image_id = random.choice(dataset.image_ids)
+image_id = dataset.image_ids[1] #random.choice(dataset.image_ids)
 image, image_meta, gt_class_id, gt_bbox, gt_mask =\
     modellib.load_image_gt(dataset, config, image_id, use_mini_mask=False)
 info = dataset.image_info[image_id]
@@ -104,8 +103,28 @@ print(r)
 visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
                             dataset.class_names, r['scores'], ax=ax,
                             title="Predictions")
+#Save the mask overlaid on the image
+plt.savefig('7.jpg',bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
 
-plt.savefig('4.jpg',bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
+mask = r['masks']
+mask = mask.astype(int)
+
+print("==========Mask Shape==========")
+print(mask.shape)
+
+print("==========Image Shape==========")
+print(image.shape)
+
+#Extract the masks
+for i in range(mask.shape[2]):
+    temp = image.copy()
+    for j in range(temp.shape[2]):
+        temp[:,:,j] = temp[:,:,j] * mask[:,:,i]
+    plt.figure(figsize=(8,8))
+    #Save the masked image for each mask
+    plt.imshow(temp)
+    plt.savefig(f'7-mask{i}.jpg',bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
+
 plt.close()
 
 log("gt_class_id", gt_class_id)

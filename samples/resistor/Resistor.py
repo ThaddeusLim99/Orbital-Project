@@ -1,4 +1,5 @@
-#Done on Python 3.7.8, Tensorflow-gpu 1.13.1, Keras
+#Done on Python 3.7.8, Tensorflow-gpu 1.13.1, Keras 2.0.8
+#Train Resistor Mask R-CNN Model
 
 """
 Mask R-CNN
