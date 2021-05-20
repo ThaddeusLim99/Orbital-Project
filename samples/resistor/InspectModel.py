@@ -1,5 +1,4 @@
-#Runs a trained model, evaluating an image from val then saving it as a .jpg and saves
-
+#Runs a trained model, evaluating an image from val or a unique image then saving it as a .jpg
 import os
 import sys
 import random
@@ -97,14 +96,14 @@ with tf.device(DEVICE):
 
 #LOAD MODEL
 #TODO - update path
-weights_path = os.path.join(MODEL_DIR, "resistor20210519T1451\mask_rcnn_resistor_0049.h5") #Choose which model to load
+weights_path = os.path.join(MODEL_DIR, "TrainedUsingBestModels\mask_rcnn_resistor_0044.h5") #Choose which model to load
 
 #Load weights
 print("Loading weights ", weights_path)
 model.load_weights(weights_path, by_name=True)
 
 #RUN DETECTION
-image_id = dataset.image_ids[15] #random.choice(dataset.image_ids)
+image_id = dataset.image_ids[20] #random.choice(dataset.image_ids)
 image, image_meta, gt_class_id, gt_bbox, gt_mask =\
     modellib.load_image_gt(dataset, config, image_id, use_mini_mask=False)
 info = dataset.image_info[image_id]
@@ -124,7 +123,10 @@ results = model.detect([image])
 # Display results
 ax = get_ax(1)
 r = results[0]
-print(r)
+
+# print(r)
+#print the coordinates of the first bounding box, format (y1, x1, y2, x2)
+#print (r['rois'][0])
 
 if r['masks'].size > 0:
     masks = np.zeros((image.shape[0], image.shape[1], r['masks'].shape[-1]), dtype=np.uint8)
@@ -146,7 +148,8 @@ visualize.display_instances(image, rois, masks, r['class_ids'],
 #visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], dataset.class_names, r['scores'], ax=ax, title="Predictions")
 
 #Save the mask overlaid on the image
-plt.savefig('11.jpg',bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
+name = "11"
+plt.savefig(f"{name}.jpg",bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
 
 mask = r['masks']
 mask = mask.astype(int)
@@ -158,7 +161,7 @@ print("==========Image Shape==========")
 print(image.shape)
 
 #Extract the masks
-'''
+
 for i in range(mask.shape[2]):
     temp = image.copy()
     for j in range(temp.shape[2]):
@@ -166,8 +169,8 @@ for i in range(mask.shape[2]):
     plt.figure(figsize=(8,8))
     #Save the masked image for each mask
     plt.imshow(temp)
-    plt.savefig(f'7-mask{i}.jpg',bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
-'''
+    plt.savefig(f'{name}-mask{i}.jpg',bbox_inches='tight', pad_inches=-0.5,orientation= 'landscape') #TODO: Change file name
+
 plt.close()
 
 log("gt_class_id", gt_class_id)

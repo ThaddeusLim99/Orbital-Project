@@ -1,4 +1,4 @@
-#Runs a trained model, evaluating an image from val then saving it as a .jpg and saves
+#Runs through every single weights in the model, evaluating an image from val then saving it as a .jpg and saves
 
 import os
 import sys

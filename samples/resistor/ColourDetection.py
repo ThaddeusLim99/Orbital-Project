@@ -40,12 +40,13 @@ def get_colours(image, number_of_colors, show_chart=True):
 
 
 IMAGE_DIRECTORY = os.path.abspath(".")
+img_dir = os.path.join(IMAGE_DIRECTORY, "images")
 images = []
 
 #iterate through all files in the directory and add all files ending with .jpg
-for file in os.listdir(IMAGE_DIRECTORY):
+for file in os.listdir(img_dir):
     if file.endswith('.jpg'):
-        images.append(get_image(os.path.join(IMAGE_DIRECTORY, file)))
+        images.append(get_image(os.path.join(img_dir, file)))
 
 plt.figure(figsize=(20, 10))
 #iterate through every image and get colour piechart
