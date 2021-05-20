@@ -36,6 +36,10 @@ import json
 import datetime
 import numpy as np
 import skimage.draw
+import pandas as pd
+import matplotlib.pyplot as plt
+from imgaug import augmenters as iaa
+import imgaug
 
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
@@ -56,7 +60,6 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 #  Configurations
 ############################################################
 
-
 class ResistorConfig(Config):
     """Configuration for training on the toy  dataset.
     Derives from the base Config class and overrides some values.
@@ -72,11 +75,14 @@ class ResistorConfig(Config):
     NUM_CLASSES = 1 + 1  # Background + resistor
 
     # Number of training steps per epoch
-    STEPS_PER_EPOCH = 100
+    # STEPS_PER_EPOCH = Number of images / batch size
+    # batch size = images per gpu * gpu count
+    STEPS_PER_EPOCH = 150
 
     # Skip detections with < 90% confidence
-    DETECTION_MIN_CONFIDENCE = 0.9
+    DETECTION_MIN_CONFIDENCE = 0.90
 
+    #MAX_GT_INSTANCES = 50
 
 ############################################################
 #  Dataset
@@ -190,16 +196,64 @@ def train(model):
     dataset_val.load_resistor(args.dataset, "val")
     dataset_val.prepare()
 
+    #Augmentation
+    augmentation = iaa.Sometimes(0.5, [
+    iaa.OneOf([ ## rotate
+        iaa.Affine(rotate=0),
+        iaa.Affine(rotate=90),
+        iaa.Affine(rotate=180),
+        iaa.Affine(rotate=270),
+    ]),
+    iaa.Fliplr(0.5),
+    iaa.Flipud(0.5),
+    iaa.OneOf([ ## brightness or contrast
+        iaa.Multiply((0.9, 1.1)),
+        iaa.ContrastNormalization((0.9, 1.1)),
+    ]),
+    iaa.OneOf([ ## blur or sharpen
+        iaa.GaussianBlur(sigma=(0.0, 0.3)),
+        iaa.Sharpen(alpha=(0.0, 0.3)),
+        ]),
+    ])
+
     # *** This training schedule is an example. Update to your needs ***
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
     # no need to train all layers, just the heads should do it.
     print("Training network heads")
-    model.train(dataset_train, dataset_val,
-                learning_rate=config.LEARNING_RATE,
-                epochs=30,
-                layers='heads')
+    
+    #Learning Rate
+    LR = 0.001
 
+    #Training 
+    model.train(dataset_train, dataset_val,
+                learning_rate=LR,
+                epochs=50,
+                layers='heads',
+                augmentation=augmentation)
+    
+    history = model.keras_model.history.history
+
+    new_history = model.keras_model.history.history
+    for k in new_history: history[k] = history[k] + new_history[k]
+
+    epochs = range(1, len(history['loss'])+1)
+    pd.DataFrame(history, index=epochs)
+
+    # find best epoch
+    best_epoch = np.argmin(history["val_loss"]) + 1
+    print("===========Best epoch: ", best_epoch,"===========")
+    print("===========Valid loss: ", history["val_loss"][best_epoch-1],"===========")
+
+    # summarize history for loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'test'], loc='upper left')
+    plt.show()
+    
 
 def color_splash(image, mask):
     """Apply color splash effect.
