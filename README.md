@@ -5,16 +5,16 @@ This is an app that uses an implementation of [Mask R-CNN](https://arxiv.org/abs
 # Mask R-CNN
 Trained a model using COCO weights to detect resistors of various kinds. The training process is adapted from [balloon.py](samples/balloon/balloon.py) and the detection process is adapted from [demo.ipynb](samples/demo.ipynb).
 
-### [Segmenting Resistors]
+### Segmenting Resistors
 ![Resistor Segmentation](assets/resistor_detect.png)
 
-### [Cropping out to get the isolated resistor]
+### Cropping out to get the isolated resistor
 ![Resistor Mask](assets/resistor_mask.png)
 
 # Colour Detection
-After extracting the resistor and padding the background with black, making colour detection of resistor bands more accurate, we now perform colour detection. To increase accuracy, we quantize the image using [scikit's implementation of K means algorithm](https://scikit-learn.org/stable/auto_examples/cluster/plot_color_quantization.html#:~:text=Performs%20a%20pixel%2Dwise%20Vector,preserving%20the%20overall%20appearance%20quality.). The range of the number of colours that works best for us is around 12 to 16.
+After extracting the resistor and padding the background with black, making colour detection of resistor bands more accurate, we now perform colour detection. To increase accuracy, we quantize the image using [scikit's implementation of K means algorithm](https://scikit-learn.org/stable/auto_examples/cluster/plot_color_quantization.html#:~:text=Performs%20a%20pixel%2Dwise%20Vector,preserving%20the%20overall%20appearance%20quality.). The range of the number of colours that works best for us is around 12 to 16. 
 
-### [Colour Quantization]
+### Colour Quantization
 ![Image after Colour Quantization](assets/quantized_image.png)
 
 ![Identifying each colour](assets/testbrown-127.png)
