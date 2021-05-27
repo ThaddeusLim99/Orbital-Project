@@ -25,23 +25,11 @@ from mrcnn.visualize import display_images
 import mrcnn.model as modellib
 from mrcnn.model import log
 from samples.resistor import Resistor
- 
 
 # Directory to save logs and model checkpoints, if not provided
 # through the command line argument --logs
 #renamed DEFAULT_LOGS_DIR to MODEL_DIR
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
-
-#added a direct way to find h5 file
-# Local path to trained weights file
-COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_resistor_0044.h5")
-# Download COCO trained weights from Releases if needed
-if not os.path.exists(COCO_MODEL_PATH):
-    print("h5 file not found")
-
-#added a direct way to find images
-# Directory of images to run detection on
-IMAGE_DIR = os.path.join(ROOT_DIR, "images")
 
 def get_ax(rows=1, cols=1, size=16):
     """Return a Matplotlib Axes array to be used in
@@ -106,8 +94,8 @@ def run_detection(model):
 
     #Save the mask overlaid on the image
     name = args.name
-    #plt.savefig(f"{name}.png",bbox_inches='tight', pad_inches=-0.5, orientation='landscape')
-    cv2.imwrite(f"{name}.png", image)
+    plt.savefig(f"{name}.png",bbox_inches='tight', pad_inches=-0.5, orientation='landscape')
+    #cv2.imwrite(f"{name}.png", image)
 
     mask = r['masks']
     mask = mask.astype(int)
@@ -179,12 +167,18 @@ if __name__ == '__main__':
 
     # Create model object in inference mode.
     print("Logs: ", args.logs)
+
     #changed this part
     model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
+
+    WEIGHTS_PATH = args.weights
+    # Download COCO trained weights from Releases if needed
+    if not os.path.exists(WEIGHTS_PATH):
+        print("h5 file not found")
 
     # Load weights trained on MS-COCO
     print("Loading weights ", args.weights)
     #changed this part
-    model.load_weights(COCO_MODEL_PATH, by_name=True)
+    model.load_weights(WEIGHTS_PATH, by_name=True)
 
     run_detection(model)

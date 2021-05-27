@@ -18,15 +18,6 @@ cv2.waitKey(0)
 h,s,v = cv2.split(image_hsv)
 print(h,s,v)
 
-HSV_codes = {
-    "black_lb":[0, 0, 0],
-    "black_ub":[255, 255, 0],
-    "brown_lb":[10, 100, 20],
-    "brown_ub":[20, 255, 200],
-    "ORANGE_LB": np.array([7, 50, 50],np.uint8),
-    "ORANGE_UB": np.array([12, 255, 255],np.uint8)
-}
-
 # Let's count the number of occurrences of each hue [0,179]
 bins = np.bincount(h.flatten())
 print(bins)
