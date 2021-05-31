@@ -78,5 +78,5 @@ plt.axis('off')
 #title = f"Quantized image ({n_colors}, K-Means)"
 #plt.title(title)
 plt.imshow(recreate_image(kmeans.cluster_centers_, labels, w, h))
-plt.savefig("quantized_image.png", bbox_inches="tight", pad_inches=-0.5,  orientation='landscape')
+plt.savefig("quantized_image.png", bbox_inches="tight", pad_inches=-0.2,  orientation='landscape')
 #plt.show()

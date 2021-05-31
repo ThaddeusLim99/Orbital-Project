@@ -1,10 +1,7 @@
 import cv2
 import numpy as np
 
-# Minimum percentage of pixels of same hue to consider dominant colour
-MIN_PIXEL_CNT_PCT = (1.0/20.0)
-
-image = cv2.imread('quantized_image.png')
+image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\quantized_image.png')
 if image is None:
     print("Failed to load iamge.")
     exit(-1)
@@ -45,47 +42,50 @@ HSV_codes = {
 
 HSV_boundaries = [
     ([0, 0, 0], [179, 255, 0]), #black, 0
-    ([10, 70, 20], [20, 255, 150]), #brown, 1
+    ([5, 70, 0], [15, 255, 125]), #brown, 1
     ([0, 150, 150], [10, 255, 255]), #red1, 2
     ([165, 150, 150], [179, 255, 255]), #red2, 3
-    ([8, 105, 135], [15, 255, 255]), #orange, 4
-    ([20, 100, 100], [35, 255, 255]), #yellow, 5
-    ([45, 100, 50], [75, 255, 255]), #green, 6
+    ([8, 115, 135], [15, 255, 255]), #orange, 4
+    ([20, 115, 150], [35, 255, 255]), #yellow, 5
+    ([40, 60, 50], [75, 255, 255]), #green, 6
     ([100, 43, 46], [124, 255, 255]), #blue, 7
     ([125, 43, 46], [155, 255, 255]), #violet, 8
     ([0, 0, 46], [179, 43, 220]), #grey, 9
     ([0, 0, 221], [179, 30, 255]), #white, 10
-    ([18, 130, 130], [26, 255, 255]), #gold, 11
+    ([20, 55, 100], [45, 125, 255]), #gold, 11
     ([0, 0, 117], [110, 33, 202]) #silver, 12
 ]
 
 Boxes = []
 
+h,w,c = image.shape
+
 Colour_Table = ["black", "brown", "red", "red", "orange", "yellow", "green", "blue", "violet", "grey", "white", "gold", "silver"]
+
+kernal = np.ones((5, 5), "uint8") 
 
 for i, (lower, upper) in enumerate(HSV_boundaries):
     lower = np.array(lower, dtype = "uint8")
     upper = np.array(upper, dtype = "uint8")
 
     mask = cv2.inRange(image_hsv, lower, upper)
+    mask = cv2.erode(mask, kernal)
     #mask = cv2.inRange(image_hsv, HSV_codes["VIOLET_LB"], HSV_codes["VIOLET_UB"])
 
     blob = cv2.bitwise_and(image, image, mask=mask)
+
+    cv2.imshow(f"{Colour_Table[i]}", blob)
+    cv2.waitKey(0)
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     for j, contour in enumerate(contours):
         bbox = cv2.boundingRect(contour)
 
-        if (bbox[2]*bbox[3] > 1000):
+        if (bbox[2]*bbox[3] > 1000 and bbox[2]*bbox[3] < h*w):
             # Create a mask for this contour
             contour_mask = np.zeros_like(mask)
             cv2.drawContours(contour_mask, contours, j, 255, -1)
-
-            # Extract and save the area of the contour
-            region = blob.copy()[bbox[1]:bbox[1]+bbox[3],bbox[0]:bbox[0]+bbox[2]]
-            region_mask = contour_mask[bbox[1]:bbox[1]+bbox[3],bbox[0]:bbox[0]+bbox[2]]
-            region_masked = cv2.bitwise_and(region, region, mask=region_mask)
 
             # Extract the pixels belonging to this contour
             result = cv2.bitwise_and(blob, blob, mask=contour_mask)
@@ -96,7 +96,7 @@ for i, (lower, upper) in enumerate(HSV_boundaries):
             #print(Boxes)
         
             cv2.rectangle(result, top_left, bottom_right, (255, 255, 255), 2)
-            file_name_bbox = f"test{Colour_Table[i]}-{j}.png"
+            file_name_bbox = f"test-{Colour_Table[i]}-{j}.png"
             cv2.imwrite(file_name_bbox, result)
             print(f" * wrote {file_name_bbox}")
 
