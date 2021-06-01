@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\quantized_image.png')
+image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\single_resistor-mask0.png')
 if image is None:
     print("Failed to load iamge.")
     exit(-1)
@@ -52,7 +52,7 @@ HSV_boundaries = [
     ([125, 43, 46], [155, 255, 255]), #violet, 8
     ([0, 0, 46], [179, 43, 220]), #grey, 9
     ([0, 0, 221], [179, 30, 255]), #white, 10
-    ([20, 55, 100], [45, 125, 255]), #gold, 11
+    ([20, 55, 100], [30, 125, 255]), #gold, 11
     ([0, 0, 117], [110, 33, 202]) #silver, 12
 ]
 
