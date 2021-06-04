@@ -1,5 +1,15 @@
 import cv2
 import numpy as np
+import os
+import sys
+
+# Root directory of the project
+ROOT_DIR = os.path.abspath(".")
+
+print(ROOT_DIR)
+
+sys.path.append(ROOT_DIR)
+import ResistanceCalculator as res
 
 HSV_boundaries = [
     ([0, 0, 0], [179, 255, 0]), #black, 0
@@ -92,7 +102,7 @@ for i, (lower, upper) in enumerate(HSV_boundaries):
         #bbox[0] = x, bbox[1] = y, bbox[2] = w, bbox[3] = h
         bbox = cv2.boundingRect(contour)
 
-        #Filter out contours that are too small
+        #Exclude contours that are too small
         if (bbox[2]*bbox[3] > MIN_AREA): #and float(bbox[2])/bbox[3] > 0.4):
             # Create a mask for this contour
             contour_mask = np.zeros_like(mask)
@@ -107,6 +117,7 @@ for i, (lower, upper) in enumerate(HSV_boundaries):
             # And draw a bounding box
             top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
             
+            # Check if the the bounding box is referring to the same colour band
             if BoxPos:
                 if BoxPos[-1][0][0]-15 <= bbox[0] <= BoxPos[-1][0][0]+15:
                     BoxPos.pop(-1)
@@ -120,5 +131,18 @@ for i, (lower, upper) in enumerate(HSV_boundaries):
             #cv2.imwrite(file_name_bbox, result)
             #print(f" * wrote {file_name_bbox}")
 
+BoxPos = sorted(BoxPos)
 
-print(sorted(BoxPos))
+print("Sorted order of all of the colour bands detected")
+print(BoxPos)
+
+if len(BoxPos) == 3:
+    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1])
+elif len(BoxPos) == 4:
+    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1])
+elif len(BoxPos) == 5:
+    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1])
+elif len(BoxPos) == 6:
+    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1], BoxPos[5][1])
+
+print(str(result[0]) + " Ohms")
