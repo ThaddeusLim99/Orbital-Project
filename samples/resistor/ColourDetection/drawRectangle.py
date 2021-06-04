@@ -1,7 +1,12 @@
 # Draw rectangles over images
 import cv2
+import argparse
 
-img_path = "C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\single_resistor-mask0.png"
+ap = argparse.ArgumentParser()
+ap.add_argument("-i", "--image", required=True, help = "path to the image")
+args = vars(ap.parse_args())
+
+img_path = args["image"]
 
 # variables
 coordinates = []

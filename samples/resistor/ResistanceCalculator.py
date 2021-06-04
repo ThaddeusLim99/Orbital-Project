@@ -62,4 +62,3 @@ def sixBandCalc(first, second, third, m, tol, ppm):
     lb = res * (1 - toleranceCode[tol])
     ub = res * (1 + toleranceCode[tol])
     return res, lb, ub, ppmCode[ppm]
-

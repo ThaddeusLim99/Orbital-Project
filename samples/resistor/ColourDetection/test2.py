@@ -16,6 +16,12 @@ img_path = "C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Co
 
 img = []
 
+# Load images
+for file in os.listdir(img_path):
+    if file.endswith('.jpg') or file.endswith('.png'):
+        temp = skimage.io.imread(os.path.join(img_path, file))
+        img.append(temp)
+
 HSV_boundaries = [
     ([0, 0, 0], [179, 255, 0]), #black, 0
     ([5, 70, 0], [15, 255, 125]), #brown, 1
@@ -32,20 +38,16 @@ HSV_boundaries = [
     ([0, 0, 117], [110, 33, 202]) #silver, 12
 ]
 
-# Load images
-for file in os.listdir(img_path):
-    if file.endswith('.jpg') or file.endswith('.png'):
-        temp = skimage.io.imread(os.path.join(img_path, file))
-        img.append(temp)
+Colour_Table = ["black", "brown", "red", "red", "orange", "yellow", "green", "blue", "violet", "grey", "white", "gold", "silver"]
 
 def recreate_image(codebook, labels, w, h):
     """Recreate the (compressed) image from the code book & labels"""
     d = codebook.shape[1]
-    image = np.zeros((w, h, d))
+    image = np.zeros((w, h, d), dtype=np.float32)
     label_idx = 0
     for i in range(w):
         for j in range(h):
-            image[i][j] = codebook[labels[label_idx]]
+            image[i][j] = codebook[labels[label_idx]] #* 255
             label_idx += 1
     return image
 
@@ -60,57 +62,68 @@ def quantize(img):
     assert d == 3
     image_array = np.reshape(img, (w * h, d))
 
-    print("Fitting model on a small sub-sample of the data")
-    t0 = time()
     image_array_sample = shuffle(image_array, random_state=0)[:1000]
 
     # Using k means algo
     kmeans = KMeans(n_clusters=n_colors, random_state=0).fit(image_array_sample)
-    print("done in %0.3fs." % (time() - t0))
 
     # Get labels for all points
-    print("Predicting color indices on the full image (k-means)")
-    t0 = time()
     labels = kmeans.predict(image_array)
-    print("done in %0.3fs." % (time() - t0))
 
-    quantized_image = recreate_image(kmeans.cluster_centers_, labels, w, h)
+    #save image
+    result = recreate_image(kmeans.cluster_centers_, labels, w, h)
+    plt.axis('off')
+    #cv2.imshow("img", result)
+    #cv2.waitKey(0)
 
-    return quantized_image
+    plt.imshow(result)
+    plt.savefig("./images/quantized_image.png", bbox_inches="tight", pad_inches=-0.2,  orientation='landscape')
+    #plt.show()
+    '''
+    for x in range(result.shape[0]):
+        result[x, :, :] = np.fliplr(result[x, :, :])
 
-Colour_Table = ["black", "brown", "red", "red", "orange", "yellow", "green", "blue", "violet", "grey", "white", "gold", "silver"]
+    return result
+    '''
 
-for image in img:
-    quantized_image = quantize(image)
+for k, image in enumerate(img):
+    #image = quantize(image)
+    #print(image.shape)
+    
+    quantize(image)
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\quantized_image.png')
+    #print(image.shape)
 
-    h,w,c = quantized_image.shape
+    image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
     for i, (lower, upper) in enumerate(HSV_boundaries):
         lower = np.array(lower, dtype = "uint8")
         upper = np.array(upper, dtype = "uint8")
 
-        mask = cv2.inRange(quantized_image, lower, upper)
+        mask = cv2.inRange(image_hsv, lower, upper)
 
         blob = cv2.bitwise_and(image, image, mask=mask)
+        
+        h,w = mask.shape
 
+        if 0.5*h*w < np.count_nonzero(mask):
+            #cv2.imshow(f"{Colour_Table[i]}", blob)
+            #cv2.waitKey(0)
+            file_name_bbox = f"image-{k}-{Colour_Table[i]}.png"
+            #cv2.imwrite(f"{file_name_bbox}", blob)
+            print(f" * colour for image {k} is {Colour_Table[i]}")
+
+        '''
         contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         for j, contour in enumerate(contours):
             bbox = cv2.boundingRect(contour)
 
-            if (bbox[2]*bbox[3] == h*w):
-                # Create a mask for this contour
-                contour_mask = np.zeros_like(mask)
-                cv2.drawContours(contour_mask, contours, j, 255, -1)
+            #print(h*w)
+            #print(bbox[2]*bbox[3])
 
-                # Extract the pixels belonging to this contour
-                result = cv2.bitwise_and(blob, blob, mask=contour_mask)
-
-                # And draw a bounding box
-                top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
-                #print(Boxes)
-            
-                cv2.rectangle(result, top_left, bottom_right, (255, 255, 255), 2)
-                file_name_bbox = f"test-{Colour_Table[i]}-{j}.png"
-                cv2.imwrite(file_name_bbox, result)
-                print(f" * wrote {file_name_bbox}")
+            if (0.4*h*w <= bbox[2]*bbox[3] <= h*w):
+                file_name_bbox = f"image-{k}-{Colour_Table[i]}-{j}.png"
+                cv2.imwrite(f"{file_name_bbox}", blob)
+                print(f" * colour for image {k} is {Colour_Table[i]}")
+        '''
