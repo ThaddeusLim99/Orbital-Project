@@ -136,6 +136,7 @@ BoxPos = sorted(BoxPos)
 print("Sorted order of all of the colour bands detected")
 print(BoxPos)
 
+#Get Resistance
 if len(BoxPos) == 3:
     result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1])
 elif len(BoxPos) == 4:
@@ -145,4 +146,21 @@ elif len(BoxPos) == 5:
 elif len(BoxPos) == 6:
     result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1], BoxPos[5][1])
 
-print(str(result[0]) + " Ohms")
+temp = list(result)
+
+for i in range(len(result)):
+    if temp[i] >= 1000000:
+        temp[i] /= 1000000
+        temp[i] = str(temp[i]) + " M"
+    elif temp[i] >= 1000:
+        temp[i] /= 1000
+        temp[i] = str(temp[i]) + " k"
+
+result = tuple(temp)
+
+if len(BoxPos) < 3:
+    print("Not enough colour bands detected")
+elif len(BoxPos) > 6:
+    print("Too many colours detected")
+else:
+    print(result[i] + "Ohms")
