@@ -17,8 +17,8 @@ HSV_boundaries = [
     ([0, 150, 150], [10, 255, 255]), #red1, 2
     #([165, 150, 150], [179, 255, 255]), #red2, 2
     ([8, 115, 135], [15, 255, 255]), #orange, 3
-    ([20, 115, 150], [35, 255, 255]), #yellow, 4
-    ([40, 60, 50], [75, 255, 255]), #green, 5
+    ([20, 130, 175], [35, 255, 255]), #yellow, 4
+    ([40, 60, 50], [75, 255, 255]), #green, z
     ([100, 43, 46], [124, 255, 255]), #blue, 6
     ([125, 43, 46], [155, 255, 255]), #violet, 7
     ([0, 0, 46], [179, 43, 220]), #grey, 8
@@ -51,6 +51,20 @@ def getBackground(image):
 
     return backgroundMask
 
+
+def GetDrawResistor(DataIn):
+	Data = DataIn.copy()
+	t = np.uint8(np.mean(Data,axis=0))
+
+	DrawResistor = np.zeros((Data.shape[0],Data.shape[1],3), np.uint8)
+	DRWidth = Data.shape[1]
+	DRHeight = Data.shape[0]
+
+	for i in range((np.shape(t)[0])):
+		cv2.rectangle(Data,(i,0), (i+1,DRHeight), np.float64(t[i]), 1)
+
+	return Data
+
 image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\resistor.jpg')
 if image is None:
     print("Image not found")
@@ -58,6 +72,8 @@ if image is None:
 
 #Resize Image
 image = cv2.resize(image, (400,200))
+
+#image = GetDrawResistor(image)
 
 #apply bilateral filter
 filtered = cv2.bilateralFilter(image, 5, 80, 80)
@@ -72,9 +88,20 @@ image_hsv = cv2.cvtColor(filtered, cv2.COLOR_BGR2HSV)
 gray = cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY)
 
 #edge threshold filters out background and resistor body
-thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 59, 5)
+thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
 #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 thresh = cv2.bitwise_not(thresh)
+
+#yellow usually gets filtered out after the thresholding
+#add a tighter yellow hsv boundary to reduce adding in resistor body
+yellowLB = np.array((20, 150, 190), dtype = "uint8")
+yellowUB = np.array((35, 255, 255), dtype = "uint8")
+yellowMask = cv2.inRange(image_hsv, yellowLB, yellowUB)
+# new threshold mask
+thresh = cv2.bitwise_or(thresh, yellowMask)
+
+#test = cv2.bitwise_and(image, image, mask=thresh)
+#cv2.imwrite("test.png", test)
 
 BoxPos = []
 
@@ -131,36 +158,46 @@ for i, (lower, upper) in enumerate(HSV_boundaries):
             #cv2.imwrite(file_name_bbox, result)
             #print(f" * wrote {file_name_bbox}")
 
-BoxPos = sorted(BoxPos)
+if min(BoxPos)[1] == "gold":
+    BoxPos = sorted(BoxPos, reverse=True)
+else:
+    BoxPos = sorted(BoxPos)
 
 print("Sorted order of all of the colour bands detected")
-print(BoxPos)
+
+numOfColours = len(BoxPos)
+print(numOfColours, "Colours", BoxPos)
+
 
 #Get Resistance
-if len(BoxPos) == 3:
-    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1])
-elif len(BoxPos) == 4:
-    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1])
-elif len(BoxPos) == 5:
-    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1])
-elif len(BoxPos) == 6:
-    result = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1], BoxPos[5][1])
+if numOfColours == 3:
+    results = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1])
+elif numOfColours == 4:
+    results = res.fourBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1])
+elif numOfColours == 5:
+    results = res.fiveBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1])
+elif numOfColours == 6:
+    results = res.sixBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1], BoxPos[5][1])
 
-temp = list(result)
+temp = list(results)
 
-for i in range(len(result)):
+for i in range(len(results)):
     if temp[i] >= 1000000:
         temp[i] /= 1000000
-        temp[i] = str(temp[i]) + " M"
+        temp[i] = str(temp[i]) + " MOhms"
     elif temp[i] >= 1000:
         temp[i] /= 1000
-        temp[i] = str(temp[i]) + " k"
+        temp[i] = str(temp[i]) + " kOhms"
+    else:
+        temp[i] = str(temp[i]) + " Ohms"
 
 result = tuple(temp)
 
-if len(BoxPos) < 3:
+if numOfColours < 3:
     print("Not enough colour bands detected")
-elif len(BoxPos) > 6:
+elif numOfColours > 6:
     print("Too many colours detected")
-else:
-    print(result[i] + "Ohms")
+elif numOfColours <= 5:
+    print("Resistance:", result[0], "LB:", result[1], "UB:", result[2])
+elif numOfColours == 6:
+    print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
