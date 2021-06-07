@@ -6,10 +6,9 @@ import sys
 # Root directory of the project
 ROOT_DIR = os.path.abspath(".")
 
-print(ROOT_DIR)
-
 sys.path.append(ROOT_DIR)
 import ResistanceCalculator as res
+#from ColourDetection import ColourQuantizationKmeans
 
 HSV_boundaries = [
     ([0, 0, 0], [179, 255, 0]), #black, 0
@@ -40,18 +39,18 @@ def scale(arr, m):
 
 def getBackground(image):
     h,w,_ = image.shape
-    backgroundColorTop = cv2.mean(image[0:1,:,:])
-    backgroundColorBottom = cv2.mean(image[h-1:h,:,:])
+    meanTopBackgroundColor = cv2.mean(image[0:1,:,:])
+    meanBotBackgroundColor = cv2.mean(image[h-1:h,:,:])
 
-    bottomMask = cv2.inRange(image, scale(backgroundColorBottom, 0.6), scale(backgroundColorBottom, 1.4))
-    topMask = cv2.inRange(image, scale(backgroundColorTop, 0.6), scale(backgroundColorTop, 1.4))
+    botMask = cv2.inRange(image, scale(meanBotBackgroundColor, 0.5), scale(meanBotBackgroundColor, 1.5))
+    topMask = cv2.inRange(image, scale(meanTopBackgroundColor, 0.5), scale(meanTopBackgroundColor, 1.5))
 
-    backgroundMask = cv2.bitwise_or(topMask, bottomMask)
+    backgroundMask = cv2.bitwise_or(topMask, botMask)
     backgroundMask = cv2.bitwise_not(backgroundMask)
 
     return backgroundMask
 
-
+# Function taken from https://github.com/lucasmoraeseng/resistordetector
 def GetDrawResistor(DataIn):
 	Data = DataIn.copy()
 	t = np.uint8(np.mean(Data,axis=0))
@@ -65,139 +64,163 @@ def GetDrawResistor(DataIn):
 
 	return Data
 
-image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\resistor.jpg')
-if image is None:
-    print("Image not found")
-    exit(-1)
+def getColourBands(image):
+    #Resize Image
+    image = cv2.resize(image, (400,200))
 
-#Resize Image
-image = cv2.resize(image, (400,200))
+    #image = GetDrawResistor(image)
 
-#image = GetDrawResistor(image)
+    #apply bilateral filter
+    filtered = cv2.bilateralFilter(image, 5, 80, 80)
 
-#apply bilateral filter
-filtered = cv2.bilateralFilter(image, 5, 80, 80)
+    #get background mask
+    background_mask = getBackground(filtered)
 
-#get background mask
-background_mask = getBackground(filtered)
+    #Convert to HSV
+    image_hsv = cv2.cvtColor(filtered, cv2.COLOR_BGR2HSV)
 
-#Convert to HSV
-image_hsv = cv2.cvtColor(filtered, cv2.COLOR_BGR2HSV)
+    #Convert to Gray
+    gray = cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY)
 
-#Convert to Gray
-gray = cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY)
+    #edge threshold filters out background and resistor body
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
+    #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    thresh = cv2.bitwise_not(thresh)
 
-#edge threshold filters out background and resistor body
-thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
-#ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-thresh = cv2.bitwise_not(thresh)
+    #test = cv2.bitwise_and(image, image, mask=thresh)
+    #cv2.imwrite("firstblob.png", test)
 
-#yellow usually gets filtered out after the thresholding
-#add a tighter yellow hsv boundary to reduce adding in resistor body
-yellowLB = np.array((20, 150, 190), dtype = "uint8")
-yellowUB = np.array((35, 255, 255), dtype = "uint8")
-yellowMask = cv2.inRange(image_hsv, yellowLB, yellowUB)
-# new threshold mask
-thresh = cv2.bitwise_or(thresh, yellowMask)
+    #yellow usually gets filtered out after the thresholding
+    #add a tighter yellow hsv boundary to reduce adding in resistor body
+    yellowLB = np.array((20, 150, 190), dtype = "uint8")
+    yellowUB = np.array((35, 255, 255), dtype = "uint8")
+    yellowMask = cv2.inRange(image_hsv, yellowLB, yellowUB)
+    # new threshold mask
+    thresh = cv2.bitwise_or(thresh, yellowMask)
 
-#test = cv2.bitwise_and(image, image, mask=thresh)
-#cv2.imwrite("test.png", test)
+    #test = cv2.bitwise_and(image, image, mask=thresh)
+    #cv2.imwrite("secondblob.png", test)
 
-BoxPos = []
+    #test = cv2.bitwise_and(image, image, mask=thresh)
+    #cv2.imwrite("test.png", test)
 
-for i, (lower, upper) in enumerate(HSV_boundaries):
-    lower = np.array(lower, dtype = "uint8")
-    upper = np.array(upper, dtype = "uint8")
+    BoxPos = []
 
-    #get mask for each colour
-    mask = cv2.inRange(image_hsv, lower, upper)
-    #add onto the background mask
-    mask = cv2.bitwise_and(background_mask, mask)
+    for i, (lower, upper) in enumerate(HSV_boundaries):
+        lower = np.array(lower, dtype = "uint8")
+        upper = np.array(upper, dtype = "uint8")
 
-    #merge red1 and red2
-    if (i == 2):
-        mask2 = cv2.inRange(image_hsv, red2LB, red2UB)
-        mask = cv2.bitwise_or(mask, mask2, mask)
-    
-    #add the resistor body mask
-    mask = cv2.bitwise_and(mask, thresh, mask=mask)
-    #produce masked image
-    blob = cv2.bitwise_and(image, image, mask=mask)
+        #get mask for each colour
+        mask = cv2.inRange(image_hsv, lower, upper)
+        #add onto the background mask
+        mask = cv2.bitwise_and(background_mask, mask)
 
-    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    for j, contour in enumerate(contours):
-        #bbox[0] = x, bbox[1] = y, bbox[2] = w, bbox[3] = h
-        bbox = cv2.boundingRect(contour)
-
-        #Exclude contours that are too small
-        if (bbox[2]*bbox[3] > MIN_AREA): #and float(bbox[2])/bbox[3] > 0.4):
-            # Create a mask for this contour
-            contour_mask = np.zeros_like(mask)
-            cv2.drawContours(contour_mask, contours, j, 255, -1)
-
-            # Extract the pixels belonging to this contour
-            result = cv2.bitwise_and(blob, blob, mask=contour_mask)
-
-            #cv2.imshow(f"{Colour_Table[i]}-{j}", result)
-            #cv2.waitKey(0)
-
-            # And draw a bounding box
-            top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
-            
-            # Check if the the bounding box is referring to the same colour band
-            if BoxPos:
-                if BoxPos[-1][0][0]-15 <= bbox[0] <= BoxPos[-1][0][0]+15:
-                    BoxPos.pop(-1)
-            
-            # Keep track of all accepted band positions
-            BoxPos.append((top_left, Colour_Table[i]))
+        #merge red1 and red2
+        if (i == 2):
+            mask2 = cv2.inRange(image_hsv, red2LB, red2UB)
+            mask = cv2.bitwise_or(mask, mask2, mask)
         
-            result = cv2.rectangle(result, top_left, bottom_right, (255, 255, 255), 2)
+        #add the resistor body mask
+        mask = cv2.bitwise_and(mask, thresh, mask=mask)
+        #produce masked image
+        blob = cv2.bitwise_and(image, image, mask=mask)
 
-            #file_name_bbox = f"test-{Colour_Table[i]}-{j}.png"
-            #cv2.imwrite(file_name_bbox, result)
-            #print(f" * wrote {file_name_bbox}")
+        contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        for j, contour in enumerate(contours):
+            #bbox[0] = x, bbox[1] = y, bbox[2] = w, bbox[3] = h
+            bbox = cv2.boundingRect(contour)
 
-if min(BoxPos)[1] == "gold":
-    BoxPos = sorted(BoxPos, reverse=True)
-else:
-    BoxPos = sorted(BoxPos)
+            #Exclude contours that are too small
+            if (bbox[2]*bbox[3] > MIN_AREA): #and float(bbox[2])/bbox[3] > 0.4):
+                # Create a mask for this contour
+                contour_mask = np.zeros_like(mask)
+                cv2.drawContours(contour_mask, contours, j, 255, -1)
 
-print("Sorted order of all of the colour bands detected")
+                # Extract the pixels belonging to this contour
+                result = cv2.bitwise_and(blob, blob, mask=contour_mask)
 
-numOfColours = len(BoxPos)
-print(numOfColours, "Colours", BoxPos)
+                #cv2.imshow(f"{Colour_Table[i]}-{j}", result)
+                #cv2.waitKey(0)
 
+                # And draw a bounding box
+                top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
+                
+                # Check if the the bounding box is referring to the same colour band
+                if BoxPos:
+                    if BoxPos[-1][0][0]-15 <= bbox[0] <= BoxPos[-1][0][0]+15:
+                        BoxPos.pop(-1)
+                
+                # Keep track of all accepted band positions
+                BoxPos.append((top_left, Colour_Table[i]))
+            
+                result = cv2.rectangle(result, top_left, bottom_right, (255, 255, 255), 2)
 
-#Get Resistance
-if numOfColours == 3:
-    results = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1])
-elif numOfColours == 4:
-    results = res.fourBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1])
-elif numOfColours == 5:
-    results = res.fiveBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1])
-elif numOfColours == 6:
-    results = res.sixBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1], BoxPos[5][1])
+                #file_name_bbox = f"test-{Colour_Table[i]}-{j}.png"
+                #cv2.imwrite(file_name_bbox, result)
+                #print(f" * wrote {file_name_bbox}")
+    
+    return BoxPos
 
-temp = list(results)
+def getResistance(BoxPos):
+    numOfBands = len(BoxPos)
+    
+    if numOfBands > 3:
+        # Gold/Silver bands can only describe tolerance levels
+        if min(BoxPos)[1] == "gold" or min(BoxPos)[1] == "silver":
+            BoxPos = sorted(BoxPos, reverse=True)
+        else:
+            BoxPos = sorted(BoxPos)
 
-for i in range(len(results)):
-    if temp[i] >= 1000000:
-        temp[i] /= 1000000
-        temp[i] = str(temp[i]) + " MOhms"
-    elif temp[i] >= 1000:
-        temp[i] /= 1000
-        temp[i] = str(temp[i]) + " kOhms"
-    else:
-        temp[i] = str(temp[i]) + " Ohms"
+        #TODO: Fix 
+        if BoxPos[2][1] == "gold" or BoxPos[2][1] == "silver":
+            sorted(BoxPos, reverse=True)
 
-result = tuple(temp)
+    print("Sorted order of all of the colour bands detected")
 
-if numOfColours < 3:
-    print("Not enough colour bands detected")
-elif numOfColours > 6:
-    print("Too many colours detected")
-elif numOfColours <= 5:
-    print("Resistance:", result[0], "LB:", result[1], "UB:", result[2])
-elif numOfColours == 6:
-    print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
+    print(numOfBands, "Colours", BoxPos)
+
+    if numOfBands < 3:
+        print("Not enough colour bands detected")
+        return
+    if numOfBands > 6:
+        print("Too many colours detected")
+        return
+
+    #Get Resistance
+    if numOfBands == 3:
+        results = res.threeBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1])
+    elif numOfBands == 4:
+        results = res.fourBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1])
+    elif numOfBands == 5:
+        results = res.fiveBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1])
+    elif numOfBands == 6:
+        results = res.sixBandCalc(BoxPos[0][1], BoxPos[1][1], BoxPos[2][1], BoxPos[3][1], BoxPos[4][1], BoxPos[5][1])
+
+    temp = list(results)
+
+    for i in range(len(results)):
+        if temp[i] >= 1000000:
+            temp[i] /= 1000000
+            temp[i] = str(temp[i]) + " MOhms"
+        elif temp[i] >= 1000:
+            temp[i] /= 1000
+            temp[i] = str(temp[i]) + " kOhms"
+        else:
+            temp[i] = str(temp[i]) + " Ohms"
+
+    result = tuple(temp)
+
+    if numOfBands <= 5:
+        print("Resistance:", result[0], "LB:", result[1], "UB:", result[2])
+    elif numOfBands == 6:
+        print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
+
+if __name__ == '__main__':
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\resistor2.png')
+    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
+    if image is None:
+        print("Image not found")
+        exit(-1)
+
+    bands = getColourBands(image)
+    getResistance(bands)

@@ -17,11 +17,33 @@ After extracting the resistor and padding the background with black, making colo
 ### Colour Quantization
 ![Image after Colour Quantization](assets/quantized_image.png)
 
-![Identifying each colour](assets/testbrown-127.png)
+![Identifying each colour](assets/testbrown-51.png)
 
 ![Identifying each colour](assets/testred-3.png)
 
-For now, the colour detection is not able to detect all 4 colour bands reliably. 
+
+Another method we've tried is to convert the image to gray scale, then use adaptiveThreshold to filter out the background and the body of the resistor.
+
+### Resistor with Yellow Band and Bleach coloured body
+![Resistor](assets/SecondTest/resistor.jpg)
+
+But for some resistors, yellow is quite close to the colour of the body of the resistor. And the resulting threshold mask excludes the yellow.
+
+### Initial Mask
+![Initial Mask](assets/SecondTest/thresh.png)
+
+### Result of Applying Mask
+![Result](assets/SecondTest/firstblob.png)
+
+To include the yellow band, we've added the yellow mask into the initial mask to get a mask that includes the yellow band.
+
+### Second Mask
+![Second Mask](assets/SecondTest/newthresh.png)
+
+### Result of Applying Mask
+![Result](assets/SecondTest/secondblob.png)
+
+For now, the colour detection is not able to detect all 4 colour bands reliably, especially with gold and silver. Sometimes, quantization improves the accuracy, other times it worsens the accuracy.
 
 ## Requirements
 Python 3.8.5, TensorFlow 2.5, Keras 2.0.8 and other common packages listed in `requirements.txt`.
