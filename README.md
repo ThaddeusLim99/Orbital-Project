@@ -12,7 +12,7 @@ Trained a model using COCO weights to detect resistors of various kinds. The tra
 ![Resistor Mask](assets/resistor_mask.png)
 
 # Colour Detection
-After extracting the resistor and padding the background with black, making colour detection of resistor bands more accurate, we now perform colour detection. To increase accuracy, we quantize the image using [scikit's implementation of K means algorithm](https://scikit-learn.org/stable/auto_examples/cluster/plot_color_quantization.html#:~:text=Performs%20a%20pixel%2Dwise%20Vector,preserving%20the%20overall%20appearance%20quality.). The range of the number of colours that works best for us is around 12 to 16. 
+After extracting the resistor and padding the background with black, making colour detection of resistor bands more accurate, we now perform colour detection. To increase accuracy, we quantize the image using [scikit's implementation of K means algorithm](https://scikit-learn.org/stable/auto_examples/cluster/plot_color_quantization.html#:~:text=Performs%20a%20pixel%2Dwise%20Vector,preserving%20the%20overall%20appearance%20quality.). The range of the number of colours that works best for us is around 12 to 16. For each hsv boundaries (colour boundaries), we create masks for each and find contours with areas that exceed some threshold and save that contour. The results will be the colour bands. However, this requires the resistors to be placed horizontally and the order of bands to be correct. For example, the first band is at the left.
 
 ### Colour Quantization
 ![Image after Colour Quantization](assets/quantized_image.png)
@@ -21,8 +21,20 @@ After extracting the resistor and padding the background with black, making colo
 
 ![Identifying each colour](assets/testred-3.png)
 
-
 Another method we've tried is to convert the image to gray scale, then use adaptiveThreshold to filter out the background and the body of the resistor.
+
+### Mask when using adaptiveThreshold
+![Resistor](assets/ThirdTest/mask.png)
+
+Gold still cannot be detected.
+
+![Resistor](assets/ThirdTest/test-brown-41.png)
+![Resistor](assets/ThirdTest/test-brown-54.png)
+
+These two contours are combined as one as the difference in x-coordinates is close enough for it to be the same band.
+
+![Resistor](assets/ThirdTest/test-brown-63.png)
+![Resistor](assets/ThirdTest/test-red-1.png)
 
 ### Resistor with Yellow Band and Bleach coloured body
 ![Resistor](assets/SecondTest/resistor.jpg)

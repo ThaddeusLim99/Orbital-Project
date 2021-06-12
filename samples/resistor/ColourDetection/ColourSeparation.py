@@ -11,8 +11,8 @@ import ResistanceCalculator as res
 #from ColourDetection import ColourQuantizationKmeans
 
 HSV_boundaries = [
-    ([0, 0, 0], [179, 255, 0]), #black, 0
-    ([5, 70, 0], [15, 255, 125]), #brown, 1
+    ([0, 0, 20], [179, 255, 35]), #black, 0
+    ([5, 70, 20], [15, 255, 125]), #brown, 1
     ([0, 150, 150], [10, 255, 255]), #red1, 2
     #([165, 150, 150], [179, 255, 255]), #red2, 2
     ([8, 115, 135], [15, 255, 255]), #orange, 3
@@ -20,7 +20,7 @@ HSV_boundaries = [
     ([40, 60, 50], [75, 255, 255]), #green, z
     ([100, 43, 46], [124, 255, 255]), #blue, 6
     ([125, 43, 46], [155, 255, 255]), #violet, 7
-    ([0, 0, 46], [179, 43, 220]), #grey, 8
+    ([0, 0, 80], [179, 40, 200]), #grey, 8
     ([0, 0, 221], [179, 30, 255]), #white, 9
     ([20, 55, 100], [30, 125, 255]), #gold, 10
     ([0, 0, 117], [110, 33, 202]) #silver, 11
@@ -30,6 +30,7 @@ Colour_Table = ["black", "brown", "red", "orange", "yellow", "green", "blue", "v
 
 red2LB =  np.array((165, 150, 150), dtype = "uint8")
 red2UB =  np.array((179, 255, 255), dtype = "uint8")
+#TODO: Change values until results are accurate
 MIN_AREA = 1000
 
 def scale(arr, m):
@@ -37,6 +38,8 @@ def scale(arr, m):
         x *= m
     return arr
 
+# Get the average background colour by using the top row and bottom row
+# Works well if the background is a solid colour and consistent
 def getBackground(image):
     h,w,_ = image.shape
     meanTopBackgroundColor = cv2.mean(image[0:1,:,:])
@@ -49,6 +52,28 @@ def getBackground(image):
     backgroundMask = cv2.bitwise_not(backgroundMask)
 
     return backgroundMask
+
+# Quantizes the image using openCV's k means algorithm
+def quantize(img):
+    Z = img.reshape((-1,3))
+    # convert to np.float32
+    Z = np.float32(Z)
+
+    # define criteria, number of clusters(K) and apply kmeans()
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+
+    # Number of colours to reduce to
+    K = 32
+
+    # k means algorithm
+    ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+
+    # Now convert back into uint8, and make original image
+    center = np.uint8(center)
+    res = center[label.flatten()]
+    res_reshaped = res.reshape((img.shape))
+
+    return res_reshaped
 
 # Function taken from https://github.com/lucasmoraeseng/resistordetector
 def GetDrawResistor(DataIn):
@@ -64,9 +89,42 @@ def GetDrawResistor(DataIn):
 
 	return Data
 
-def getColourBands(image):
+def image_resize(image, width=None, height=None, inter=cv2.INTER_AREA):
+    (h, w) = image.shape[:2]
+
+    # if both the width and height are None, then return the
+    # original image
+    if width is None and height is None:
+        return image
+
+    # check to see if the width is None
+    if width is None:
+        # calculate the ratio of the height and construct the dimensions
+        r = height / float(h)
+        dim = (int(w * r), height)
+
+    # otherwise, the height is None
+    # if both are filled, take the height still
+    else:
+        # calculate the ratio of the width and construct the dimensions
+        r = width / float(w)
+        dim = (width, int(h * r))
+
+    # resize the image
+    resized = cv2.resize(image, dim, interpolation=inter)
+
+    # return the resized image
+    return resized
+
+# Returns the colour bands from left to right in the image, order is not necessarily correct
+def getColourBands(image, show_blobs=False, save_blobs=False):
     #Resize Image
-    image = cv2.resize(image, (400,200))
+    #image = cv2.resize(image, (400,200))
+    image = image_resize(image, width=400)
+
+    #quantize the image
+    image = quantize(image)
+
 
     #image = GetDrawResistor(image)
 
@@ -84,11 +142,8 @@ def getColourBands(image):
 
     #edge threshold filters out background and resistor body
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
-    #ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     thresh = cv2.bitwise_not(thresh)
 
-    #test = cv2.bitwise_and(image, image, mask=thresh)
-    #cv2.imwrite("firstblob.png", test)
 
     #yellow usually gets filtered out after the thresholding
     #add a tighter yellow hsv boundary to reduce adding in resistor body
@@ -98,11 +153,14 @@ def getColourBands(image):
     # new threshold mask
     thresh = cv2.bitwise_or(thresh, yellowMask)
 
-    #test = cv2.bitwise_and(image, image, mask=thresh)
-    #cv2.imwrite("secondblob.png", test)
+    if show_blobs:
+        test = cv2.bitwise_and(image, image, mask=thresh)
+        cv2.imshow("test", test)
+        cv2.waitKey(0)
 
-    #test = cv2.bitwise_and(image, image, mask=thresh)
-    #cv2.imwrite("test.png", test)
+    if save_blobs:
+        test = cv2.bitwise_and(image, image, mask=thresh)
+        cv2.imwrite("test.png", test)
 
     BoxPos = []
 
@@ -139,15 +197,12 @@ def getColourBands(image):
                 # Extract the pixels belonging to this contour
                 result = cv2.bitwise_and(blob, blob, mask=contour_mask)
 
-                #cv2.imshow(f"{Colour_Table[i]}-{j}", result)
-                #cv2.waitKey(0)
-
                 # And draw a bounding box
                 top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
                 
                 # Check if the the bounding box is referring to the same colour band
                 if BoxPos:
-                    if BoxPos[-1][0][0]-15 <= bbox[0] <= BoxPos[-1][0][0]+15:
+                    if BoxPos[-1][0][0]-20 <= bbox[0] <= BoxPos[-1][0][0]+20:
                         BoxPos.pop(-1)
                 
                 # Keep track of all accepted band positions
@@ -155,36 +210,49 @@ def getColourBands(image):
             
                 result = cv2.rectangle(result, top_left, bottom_right, (255, 255, 255), 2)
 
-                #file_name_bbox = f"test-{Colour_Table[i]}-{j}.png"
-                #cv2.imwrite(file_name_bbox, result)
-                #print(f" * wrote {file_name_bbox}")
-    
+                if show_blobs:
+                    cv2.imshow(f"{Colour_Table[i]}-{j}", result)
+                    cv2.waitKey(0)
+
+                if save_blobs:
+                    file_name_bbox = f"test-{Colour_Table[i]}-{j}.png"
+                    cv2.imwrite(file_name_bbox, result)
+                    print(f" * wrote {file_name_bbox}")
+
     return BoxPos
 
+# Prints the resistance from the given input colour bands
 def getResistance(BoxPos):
     numOfBands = len(BoxPos)
-    
-    if numOfBands > 3:
-        # Gold/Silver bands can only describe tolerance levels
-        if min(BoxPos)[1] == "gold" or min(BoxPos)[1] == "silver":
-            BoxPos = sorted(BoxPos, reverse=True)
-        else:
-            BoxPos = sorted(BoxPos)
 
-        #TODO: Fix 
-        if BoxPos[2][1] == "gold" or BoxPos[2][1] == "silver":
-            sorted(BoxPos, reverse=True)
-
-    print("Sorted order of all of the colour bands detected")
-
-    print(numOfBands, "Colours", BoxPos)
-
+    # Invalid Readings
     if numOfBands < 3:
         print("Not enough colour bands detected")
         return
     if numOfBands > 6:
         print("Too many colours detected")
         return
+    
+    # Gold/Silver bands can only describe tolerance levels
+    if numOfBands == 3:
+        BoxPos = sorted(BoxPos)
+    
+    elif 3 < numOfBands < 6:
+        if min(BoxPos)[1] == "gold" or min(BoxPos)[1] == "silver":
+            BoxPos = sorted(BoxPos, reverse=True)
+        else:
+            BoxPos = sorted(BoxPos)
+
+    elif numOfBands == 6:
+        if BoxPos[2][1] == "gold" or BoxPos[2][1] == "silver":
+            BoxPos = sorted(BoxPos, reverse=True)
+        else:
+            BoxPos = sorted(BoxPos)
+
+    print("Sorted order of all of the colour bands detected")
+
+    print("Number of colour bands detected:", numOfBands)
+    print("Position and Colours:", BoxPos)
 
     #Get Resistance
     if numOfBands == 3:
@@ -216,11 +284,11 @@ def getResistance(BoxPos):
         print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
 
 if __name__ == '__main__':
-    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\resistor2.png')
-    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
+    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\11-mask0.jpg')
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
     if image is None:
         print("Image not found")
         exit(-1)
 
-    bands = getColourBands(image)
+    bands = getColourBands(image, save_blobs=True)
     getResistance(bands)

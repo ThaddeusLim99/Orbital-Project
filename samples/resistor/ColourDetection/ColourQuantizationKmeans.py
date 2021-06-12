@@ -19,6 +19,8 @@ n_colors = int(args["ncolors"])
 # Load the Image
 img = skimage.io.imread(args["image"])
 
+print(img.shape)
+
 def recreate_image(codebook, labels, w, h):
     """Recreate the (compressed) image from the code book & labels"""
     d = codebook.shape[1]
@@ -80,3 +82,7 @@ plt.axis('off')
 plt.imshow(recreate_image(kmeans.cluster_centers_, labels, w, h))
 plt.savefig("quantized_image.png", bbox_inches="tight", pad_inches=-0.2,  orientation='landscape')
 #plt.show()
+
+# To see whats the dimensions of the quantized image
+#img2 = skimage.io.imread("quantized_image.png")
+#print(img2.shape)
