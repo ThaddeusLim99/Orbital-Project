@@ -133,6 +133,9 @@ if __name__ == '__main__':
     parser.add_argument("-i", "--image", required=True,
                         metavar="path or URL to image",
                         help='Image to run the detection on')
+    parser.add_argument("-wb", required=False, default=False,
+                        help='Enable white balancing, set to True to enable')
+
     args = parser.parse_args()
 
     config = Resistor.ResistorConfig()
@@ -162,22 +165,23 @@ if __name__ == '__main__':
     image_path = args.image
     image = cv2.imread(image_path)
 
-    # Using https://github.com/mahmoudnafifi/WB_sRGB
-    # use upgraded_model= 1 to load our new model that is upgraded with new
-    # training examples.
-    upgraded_model = 1
-    # use gamut_mapping = 1 for scaling, 2 for clipping (our paper's results
-    # reported using clipping). If the image is over-saturated, scaling is
-    # recommended.
-    gamut_mapping = 2
+    if args.wb:
+        # Using https://github.com/mahmoudnafifi/WB_sRGB
+        # use upgraded_model= 1 to load our new model that is upgraded with new
+        # training examples.
+        upgraded_model = 1
+        # use gamut_mapping = 1 for scaling, 2 for clipping (our paper's results
+        # reported using clipping). If the image is over-saturated, scaling is
+        # recommended.
+        gamut_mapping = 2
 
-    # processing
-    # create an instance of the WB model
-    wbModel = wb_srgb.WBsRGB(gamut_mapping=gamut_mapping,
-                            upgraded=upgraded_model)
-    outImg = wbModel.correctImage(image) * 255  # white balance it
+        # processing
+        # create an instance of the WB model
+        wbModel = wb_srgb.WBsRGB(gamut_mapping=gamut_mapping,
+                                upgraded=upgraded_model)
+        image = wbModel.correctImage(image) * 255  # white balance it
 
-    masked_image = run_detection(outImg, model)
+    masked_image = run_detection(image, model)
     masked_image = cv2.cvtColor(masked_image, cv2.COLOR_RGB2BGR)
 
     bands = ColourSeparation.getColourBands(masked_image, show_blobs=True)

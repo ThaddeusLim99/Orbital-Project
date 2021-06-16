@@ -12,7 +12,7 @@ import ResistanceCalculator as res
 
 HSV_boundaries = [
     ([0, 0, 20], [179, 255, 35]), #black, 0
-    ([5, 70, 20], [15, 255, 125]), #brown, 1
+    ([5, 70, 60], [15, 255, 125]), #brown, 1
     ([0, 150, 150], [10, 255, 255]), #red1, 2
     #([165, 150, 150], [179, 255, 255]), #red2, 2
     ([8, 115, 135], [15, 255, 255]), #orange, 3
@@ -199,8 +199,12 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
                 
                 # Check if the the bounding box is referring to the same colour band
                 if BoxPos:
-                    if BoxPos[-1][0][0]-20 <= bbox[0] <= BoxPos[-1][0][0]+20:
-                        BoxPos.pop(-1)
+                    for (pos), colour in BoxPos:
+                        if colour == Colour_Table[i]:
+                            if pos[0]-20 <= bbox[0] <= pos[0]+20:
+                                BoxPos.remove((pos, Colour_Table[i]))
+                            # if BoxPos[-1][0][0]-20 <= bbox[0] <= BoxPos[-1][0][0]+20:
+                            #     BoxPos.pop(-1)
                 
                 # Keep track of all accepted band positions
                 BoxPos.append((top_left, Colour_Table[i]))
