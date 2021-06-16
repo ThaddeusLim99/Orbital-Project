@@ -24,16 +24,16 @@ import cv2
 class WBsRGB:
   def __init__(self, gamut_mapping=2, upgraded=0):
     if upgraded == 1:
-      self.features = np.load('models/features+.npy')  # encoded features
-      self.mappingFuncs = np.load('models/mappingFuncs+.npy')  # correct funcs
-      self.encoderWeights = np.load('models/encoderWeights+.npy')  # PCA matrix
-      self.encoderBias = np.load('models/encoderBias+.npy')  # PCA bias
+      self.features = np.load('WB_sRGB_Python/models/features+.npy')  # encoded features
+      self.mappingFuncs = np.load('WB_sRGB_Python/models/mappingFuncs+.npy')  # correct funcs
+      self.encoderWeights = np.load('WB_sRGB_Python/models/encoderWeights+.npy')  # PCA matrix
+      self.encoderBias = np.load('WB_sRGB_Python/models/encoderBias+.npy')  # PCA bias
       self.K = 75  # K value for NN searching
     else:
-      self.features = np.load('models/features.npy')  # encoded features
-      self.mappingFuncs = np.load('models/mappingFuncs.npy')  # correction funcs
-      self.encoderWeights = np.load('models/encoderWeights.npy')  # PCA matrix
-      self.encoderBias = np.load('models/encoderBias.npy')  # PCA bias
+      self.features = np.load('WB_sRGB_Python/models/features.npy')  # encoded features
+      self.mappingFuncs = np.load('WB_sRGB_Python/models/mappingFuncs.npy')  # correction funcs
+      self.encoderWeights = np.load('WB_sRGB_Python/models/encoderWeights.npy')  # PCA matrix
+      self.encoderBias = np.load('WB_sRGB_Python/models/encoderBias.npy')  # PCA bias
       self.K = 25  # K value for nearest neighbor searching
 
     self.sigma = 0.25  # fall-off factor for KNN blending

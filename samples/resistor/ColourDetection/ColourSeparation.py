@@ -54,16 +54,14 @@ def getBackground(image):
     return backgroundMask
 
 # Quantizes the image using openCV's k means algorithm
-def quantize(img):
+# K is the number of colours to reduce to
+def quantize(img, K=64):
     Z = img.reshape((-1,3))
     # convert to np.float32
     Z = np.float32(Z)
 
     # define criteria, number of clusters(K) and apply kmeans()
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-
-    # Number of colours to reduce to
-    K = 32
 
     # k means algorithm
     ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
@@ -124,7 +122,6 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
 
     #quantize the image
     image = quantize(image)
-
 
     #image = GetDrawResistor(image)
 
@@ -224,6 +221,7 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
 # Prints the resistance from the given input colour bands
 def getResistance(BoxPos):
     numOfBands = len(BoxPos)
+    print(BoxPos)
 
     # Invalid Readings
     if numOfBands < 3:
@@ -252,7 +250,7 @@ def getResistance(BoxPos):
     print("Sorted order of all of the colour bands detected")
 
     print("Number of colour bands detected:", numOfBands)
-    print("Position and Colours:", BoxPos)
+    print("Sorted Position and Colours:", BoxPos)
 
     #Get Resistance
     if numOfBands == 3:
@@ -290,5 +288,5 @@ if __name__ == '__main__':
         print("Image not found")
         exit(-1)
 
-    bands = getColourBands(image, save_blobs=True)
+    bands = getColourBands(image, show_blobs=True)
     getResistance(bands)
