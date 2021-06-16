@@ -1,2 +1,2 @@
-rootProject.name = "Orbital_Project_Java"
+rootProject.name = "Camera"
 include ':app'
