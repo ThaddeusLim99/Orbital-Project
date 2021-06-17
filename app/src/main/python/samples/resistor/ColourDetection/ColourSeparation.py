@@ -352,7 +352,7 @@ def getResistance(BoxPos):
     elif numOfBands == 6:
         print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
 
-    return result[0]
+    return result[0], BoxPos
 
 def main(mask):
     #decode string that was passed

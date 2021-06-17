@@ -23,8 +23,8 @@ ROOT_DIR = os.path.abspath("../../")
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
 from mrcnn import utils
-from mrcnn import visualize
-from mrcnn.visualize import display_images
+#from mrcnn import visualize
+#from mrcnn.visualize import display_images
 import mrcnn.model as modellib
 from mrcnn.model import log
 from samples.resistor import Resistor

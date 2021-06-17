@@ -5,7 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.Manifest;
 import android.content.ContentValues;
-import android.content.Context;
+//import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -31,6 +31,7 @@ import com.chaquo.python.android.AndroidPlatform;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -41,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     Button mCaptureBtn;
     ImageView mImageView;
     TextView resistor;
+    TextView bands;
+    TextView title;
 
     Uri image_uri;
 
@@ -57,8 +60,11 @@ public class MainActivity extends AppCompatActivity {
         mImageView = findViewById(R.id.image_view);
         mCaptureBtn = findViewById(R.id.capture_image_btn);
         resistor = (TextView) findViewById(R.id.textView3);
+        bands = (TextView) findViewById(R.id.textView);
+        title = (TextView) findViewById(R.id.textView2);
 
         resistor.setText("Resistor Value");
+        title.setText("ResCalc");
         //button click
         mCaptureBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,6 +155,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("myTAG", "obj is null");
                 mImageView.setImageURI(image_uri);
                 resistor.setText("No detection! Try Again.");
+                bands.setText("-");
             } else {
                 Log.d("myTAG", "obj is not null");
 
@@ -174,15 +181,18 @@ public class MainActivity extends AppCompatActivity {
                 final Python pyy = Python.getInstance();
                 maskString = getStringImage(rotated);
                 PyObject pyoo = pyy.getModule("samples.resistor.ColourDetection.ColourSeparation");
-                PyObject objj = pyoo.callAttr("main", maskString);
+                List<PyObject> objj = pyoo.callAttr("main", maskString).asList();
                 if (Objects.isNull(objj)){
                     Log.d("myTAG", "objj is null");
                     mImageView.setImageURI(image_uri);
                     resistor.setText("Detection error! Try Again.");
+                    bands.setText("-");
                 }else{
                     Log.d("myTAG", "objj is not null");
-                    String strr = objj.toString();
+                    String strr = objj.get(0).toString();
+                    String strrr = objj.get(1).toString();
                     resistor.setText(strr);
+                    bands.setText(strrr);
                 }
             }
 

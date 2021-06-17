@@ -2558,8 +2558,7 @@ class MaskRCNN(object):
         # Run object detection
         try:
             print("trying keras_model.predict")
-            detections, _, _, mrcnn_mask, _, _, _ =\
-                self.keras_model.predict([molded_images, image_metas, anchors], verbose=0)
+            detections, _, _, mrcnn_mask, _, _, _ = self.keras_model.predict([molded_images, image_metas, anchors], verbose=0)
         except:
             print("keras_model.predict error")
             return
