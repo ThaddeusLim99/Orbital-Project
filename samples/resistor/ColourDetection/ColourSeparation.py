@@ -141,7 +141,6 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
     thresh = cv2.bitwise_not(thresh)
 
-
     #yellow usually gets filtered out after the thresholding
     #add a tighter yellow hsv boundary to reduce adding in resistor body
     yellowLB = np.array((20, 150, 190), dtype = "uint8")
@@ -271,19 +270,19 @@ def getResistance(BoxPos):
     for i in range(len(results)):
         if temp[i] >= 1000000:
             temp[i] /= 1000000
-            temp[i] = str(temp[i]) + " MOhms"
+            temp[i] = str(f"{temp[i]:.2f}") + " MOhms"
         elif temp[i] >= 1000:
             temp[i] /= 1000
-            temp[i] = str(temp[i]) + " kOhms"
+            temp[i] = str(f"{temp[i]:.2f}") + " kOhms"
         else:
-            temp[i] = str(temp[i]) + " Ohms"
+            temp[i] = str(f"{temp[i]:.2f}") + " Ohms"
 
     result = tuple(temp)
 
     if numOfBands <= 5:
-        print("Resistance:", result[0], "LB:", result[1], "UB:", result[2])
+        print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}")
     elif numOfBands == 6:
-        print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
+        print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}","PPM:", results[3])
 
 if __name__ == '__main__':
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\11-mask0.jpg')
