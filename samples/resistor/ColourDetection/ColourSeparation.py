@@ -291,5 +291,5 @@ if __name__ == '__main__':
         print("Image not found")
         exit(-1)
 
-    bands = getColourBands(image, show_blobs=True)
+    bands = getColourBands(image, show_blobs=True, save_blobs=True)
     getResistance(bands)
