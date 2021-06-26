@@ -198,24 +198,15 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
                 top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
 
                 Append = True
-
-                # Check if the the bounding box is referring to the same colour band
+                
+                # Check for identified colour bands that occupy the same position, and only keep the one with a larger bbox area.
                 if BoxPos:
                     for (pos), colour, area in BoxPos:
-                        if colour == Colour_Table[i]:
-                            if pos[0]-20 <= bbox[0] <= pos[0]+20:
-                                if bbox_area >= area:
-                                    BoxPos.remove((pos, colour, area))
-                                elif bbox_area < area:
-                                    Append = False
-                                        
-                        # There can only be one band in the same position, take the one with a greater bbox area
-                        elif colour != Colour_Table[i]:
-                            if pos[0]-20 <= bbox[0] <= pos[0]+20:
-                                if bbox_area >= area:
-                                    BoxPos.remove((pos, colour, area))
-                                elif bbox_area < area:
-                                    Append = False
+                        if pos[0]-20 <= bbox[0] <= pos[0]+20:
+                            if bbox_area >= area:
+                                BoxPos.remove((pos, colour, area))
+                            elif bbox_area < area:
+                                Append = False
 
                 # Keep track of all accepted band positions
                 if Append:
@@ -298,7 +289,7 @@ def getResistance(BoxPos):
         print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}","PPM:", results[3])
 
 if __name__ == '__main__':
-    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor0-mask0.png')
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor4-mask0.png')
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
     if image is None:
         print("Image not found")
