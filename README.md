@@ -36,7 +36,7 @@ For each hsv boundary (colour boundaries), we create masks for each boundary and
 
 ![Identifying each colour](assets/testred-3.png)
 
-Another method we've tried is to convert the image to gray scale, then use adaptiveThreshold to filter out the background and the body of the resistor.
+Another method we've tried is to convert the image to gray scale, then use adaptiveThreshold to filter out the background and the body of the resistor. This usually only works on resistors with body colour that is lighter coloured than the colour bands, like the resistors used in the examples.
 
 ### Mask when using adaptiveThreshold
 ![Resistor](assets/ThirdTest/mask.png)

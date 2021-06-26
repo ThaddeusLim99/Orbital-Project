@@ -104,7 +104,7 @@ def run_detection(img, model):
 
     #Extract the masks
     for i in range(mask.shape[2]):
-        temp = image.copy()
+        temp = img.copy()
         for j in range(temp.shape[2]):
             temp[:,:,j] = temp[:,:,j] * mask[:,:,i]
         

@@ -11,18 +11,18 @@ import ResistanceCalculator as res
 #from ColourDetection import ColourQuantizationKmeans
 
 HSV_boundaries = [
-    ([0, 0, 20], [179, 255, 35]), #black, 0
-    ([5, 70, 60], [15, 255, 125]), #brown, 1
+    ([0, 0, 13], [179, 150, 35]), #black, 0
+    ([5, 70, 60], [15, 230, 120]), #brown, 1
     ([0, 150, 150], [10, 255, 255]), #red1, 2
     #([165, 150, 150], [179, 255, 255]), #red2, 2
     ([8, 115, 135], [15, 255, 255]), #orange, 3
-    ([20, 130, 175], [35, 255, 255]), #yellow, 4
-    ([40, 60, 50], [75, 255, 255]), #green, z
+    ([20, 155, 175], [35, 255, 255]), #yellow, 4
+    ([40, 60, 50], [84, 255, 255]), #green, z
     ([100, 43, 46], [124, 255, 255]), #blue, 6
     ([125, 43, 46], [155, 255, 255]), #violet, 7
-    ([0, 0, 80], [179, 40, 200]), #grey, 8
+    ([0, 0, 80], [179, 40, 160]), #grey, 8
     ([0, 0, 221], [179, 30, 255]), #white, 9
-    ([20, 55, 100], [30, 125, 255]), #gold, 10
+    ([15, 100, 100], [30, 180, 200]), #gold, 10
     ([0, 0, 117], [110, 33, 202]) #silver, 11
 ]
 
@@ -183,9 +183,10 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
         for j, contour in enumerate(contours):
             #bbox[0] = x, bbox[1] = y, bbox[2] = w, bbox[3] = h
             bbox = cv2.boundingRect(contour)
-
+            
+            bbox_area = bbox[2]*bbox[3]
             #Exclude contours that are too small
-            if (bbox[2]*bbox[3] > MIN_AREA): #and float(bbox[2])/bbox[3] > 0.4):
+            if (bbox_area > MIN_AREA): #and float(bbox[2])/bbox[3] > 0.4):
                 # Create a mask for this contour
                 contour_mask = np.zeros_like(mask)
                 cv2.drawContours(contour_mask, contours, j, 255, -1)
@@ -195,19 +196,31 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
 
                 # And draw a bounding box
                 top_left, bottom_right = (bbox[0], bbox[1]), (bbox[0]+bbox[2], bbox[1]+bbox[3])
-                
+
+                Append = True
+
                 # Check if the the bounding box is referring to the same colour band
                 if BoxPos:
-                    for (pos), colour in BoxPos:
+                    for (pos), colour, area in BoxPos:
                         if colour == Colour_Table[i]:
                             if pos[0]-20 <= bbox[0] <= pos[0]+20:
-                                BoxPos.remove((pos, Colour_Table[i]))
-                            # if BoxPos[-1][0][0]-20 <= bbox[0] <= BoxPos[-1][0][0]+20:
-                            #     BoxPos.pop(-1)
-                
+                                if bbox_area >= area:
+                                    BoxPos.remove((pos, colour, area))
+                                elif bbox_area < area:
+                                    Append = False
+                                        
+                        # There can only be one band in the same position, take the one with a greater bbox area
+                        elif colour != Colour_Table[i]:
+                            if pos[0]-20 <= bbox[0] <= pos[0]+20:
+                                if bbox_area >= area:
+                                    BoxPos.remove((pos, colour, area))
+                                elif bbox_area < area:
+                                    Append = False
+
                 # Keep track of all accepted band positions
-                BoxPos.append((top_left, Colour_Table[i]))
-            
+                if Append:
+                    BoxPos.append((top_left, Colour_Table[i], bbox_area))
+
                 result = cv2.rectangle(result, top_left, bottom_right, (255, 255, 255), 2)
 
                 if show_blobs:
@@ -285,11 +298,11 @@ def getResistance(BoxPos):
         print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}","PPM:", results[3])
 
 if __name__ == '__main__':
-    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\11-mask0.jpg')
-    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor0-mask0.png')
+    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
     if image is None:
         print("Image not found")
         exit(-1)
 
-    bands = getColourBands(image, show_blobs=True, save_blobs=True)
+    bands = getColourBands(image, show_blobs=True)
     getResistance(bands)
