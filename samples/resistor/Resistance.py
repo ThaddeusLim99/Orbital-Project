@@ -60,8 +60,6 @@ def run_detection(img, model, save=False):
     # Run object detection
     image = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    t0 = time()
-
     results = model.detect([image])
 
     # Display results
@@ -120,8 +118,6 @@ def run_detection(img, model, save=False):
             cv2.imwrite(f'image-mask{i}.png', temp)
     plt.close()
 
-    print("done in %0.3fs." % (time() - t0))
-
     return temp
 
 if __name__ == '__main__':
@@ -135,6 +131,8 @@ if __name__ == '__main__':
                         help='Image to run the detection on')
     parser.add_argument("-wb", required=False, default=False,
                         help='Enable white balancing, set to True to enable')
+
+    t0 = time()
 
     args = parser.parse_args()
 
@@ -186,3 +184,5 @@ if __name__ == '__main__':
 
     bands = ColourSeparation.getColourBands(masked_image, show_blobs=True)
     ColourSeparation.getResistance(bands)
+
+    print("done in %0.3fs." % (time() - t0))

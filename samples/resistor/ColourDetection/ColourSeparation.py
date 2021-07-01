@@ -13,10 +13,10 @@ import ResistanceCalculator as res
 HSV_boundaries = [
     ([0, 0, 13], [179, 150, 35]), #black, 0
     ([5, 70, 60], [15, 230, 120]), #brown, 1
-    ([0, 150, 150], [10, 255, 255]), #red1, 2
+    ([0, 150, 120], [10, 255, 255]), #red1, 2
     #([165, 150, 150], [179, 255, 255]), #red2, 2
     ([8, 115, 135], [15, 255, 255]), #orange, 3
-    ([20, 155, 175], [35, 255, 255]), #yellow, 4
+    ([20, 155, 150], [35, 255, 255]), #yellow, 4
     ([40, 60, 50], [84, 255, 255]), #green, z
     ([100, 43, 46], [124, 255, 255]), #blue, 6
     ([125, 43, 46], [155, 255, 255]), #violet, 7
@@ -28,7 +28,7 @@ HSV_boundaries = [
 
 Colour_Table = ["black", "brown", "red", "orange", "yellow", "green", "blue", "violet", "grey", "white", "gold", "silver"]
 
-red2LB =  np.array((165, 150, 150), dtype = "uint8")
+red2LB =  np.array((165, 150, 100), dtype = "uint8")
 red2UB =  np.array((179, 255, 255), dtype = "uint8")
 #TODO: Change values until results are accurate
 MIN_AREA = 1000
@@ -42,8 +42,8 @@ def scale(arr, m):
 # Works well if the background is a solid colour and consistent
 def getBackground(image):
     h,w,_ = image.shape
-    meanTopBackgroundColor = cv2.mean(image[0:1,:,:])
-    meanBotBackgroundColor = cv2.mean(image[h-1:h,:,:])
+    meanTopBackgroundColor = cv2.mean(image[0:10,:,:])
+    meanBotBackgroundColor = cv2.mean(image[h-10:h,:,:])
 
     botMask = cv2.inRange(image, scale(meanBotBackgroundColor, 0.5), scale(meanBotBackgroundColor, 1.5))
     topMask = cv2.inRange(image, scale(meanTopBackgroundColor, 0.5), scale(meanTopBackgroundColor, 1.5))
@@ -146,6 +146,7 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
     yellowLB = np.array((20, 150, 190), dtype = "uint8")
     yellowUB = np.array((35, 255, 255), dtype = "uint8")
     yellowMask = cv2.inRange(image_hsv, yellowLB, yellowUB)
+    
     # new threshold mask
     thresh = cv2.bitwise_or(thresh, yellowMask)
 
@@ -289,7 +290,8 @@ def getResistance(BoxPos):
         print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}","PPM:", results[3])
 
 if __name__ == '__main__':
-    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor4-mask0.png')
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor9-mask0.png')
+    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\datasets\\resistor\\train\\22849155424_51de01b04a_k.jpg')
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
     if image is None:
         print("Image not found")
