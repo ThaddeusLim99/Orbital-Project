@@ -139,6 +139,7 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
 
     #edge threshold filters out background and resistor body
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
+    #thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 71, 5)#59, 5)
     thresh = cv2.bitwise_not(thresh)
 
     #yellow usually gets filtered out after the thresholding
@@ -167,6 +168,7 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
 
         #get mask for each colour
         mask = cv2.inRange(image_hsv, lower, upper)
+
         #add onto the background mask
         mask = cv2.bitwise_and(background_mask, mask)
 
@@ -176,9 +178,16 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
             mask = cv2.bitwise_or(mask, mask2, mask)
         
         #add the resistor body mask
-        mask = cv2.bitwise_and(mask, thresh, mask=mask)
+        # dont need to apply adaptiveThreshold on colours that dont get mixed up
+        if Colour_Table[i] != 'green' and Colour_Table[i] != 'red':
+            mask = cv2.bitwise_and(mask, thresh, mask=mask)
+
         #produce masked image
         blob = cv2.bitwise_and(image, image, mask=mask)
+
+        if show_blobs:
+            cv2.imshow(f"blob-{Colour_Table[i]}", blob)
+            cv2.waitKey(0)
 
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         for j, contour in enumerate(contours):
@@ -230,14 +239,6 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
 def getResistance(BoxPos):
     numOfBands = len(BoxPos)
     print(BoxPos)
-
-    # Invalid Readings
-    if numOfBands < 3:
-        print("Not enough colour bands detected")
-        return
-    if numOfBands > 6:
-        print("Too many colours detected")
-        return
     
     # Gold/Silver bands can only describe tolerance levels
     if numOfBands == 3:
@@ -254,6 +255,18 @@ def getResistance(BoxPos):
             BoxPos = sorted(BoxPos, reverse=True)
         else:
             BoxPos = sorted(BoxPos)
+    
+    # Black cannot be the first band so either misdetected or did not detect a colour before
+    if BoxPos[0][1] == "black":
+        BoxPos.remove(BoxPos[0])
+    
+    # Invalid Readings
+    if numOfBands < 3:
+        print("Not enough colour bands detected")
+        return
+    if numOfBands > 6:
+        print("Too many colours detected")
+        return
 
     print("Sorted order of all of the colour bands detected")
 
@@ -290,7 +303,7 @@ def getResistance(BoxPos):
         print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}","PPM:", results[3])
 
 if __name__ == '__main__':
-    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor9-mask0.png')
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor10-mask0.png')
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\datasets\\resistor\\train\\22849155424_51de01b04a_k.jpg')
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
     if image is None:
