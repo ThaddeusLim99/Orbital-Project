@@ -39,7 +39,7 @@ def scale(arr, m):
     return arr
 
 # Get the average background colour by using the top row and bottom row
-# Works well if the background is a solid colour and consistent
+# Works well if the background is a solid colour and consistent and is completely different to the resistor
 def getBackground(image):
     h,w,_ = image.shape
     meanTopBackgroundColor = cv2.mean(image[0:10,:,:])
@@ -128,11 +128,15 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
     #apply bilateral filter
     filtered = cv2.bilateralFilter(image, 5, 80, 80)
 
+    #Convert to HSV
+    image_hsv = cv2.cvtColor(filtered, cv2.COLOR_BGR2HSV)
+
     #get background mask
     background_mask = getBackground(filtered)
 
-    #Convert to HSV
-    image_hsv = cv2.cvtColor(filtered, cv2.COLOR_BGR2HSV)
+    if show_blobs:
+        cv2.imshow("background_mask", background_mask)
+        cv2.waitKey(0)
 
     #Convert to Gray
     gray = cv2.cvtColor(filtered, cv2.COLOR_BGR2GRAY)
@@ -303,7 +307,7 @@ def getResistance(BoxPos):
         print(f"Resistance: {result[0]} LB: {result[1]} UB: {result[2]}","PPM:", results[3])
 
 if __name__ == '__main__':
-    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor10-mask0.png')
+    image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\HSV_tuning_images\\resistor0-mask0.png')
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\datasets\\resistor\\train\\22849155424_51de01b04a_k.jpg')
     #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
     if image is None:
