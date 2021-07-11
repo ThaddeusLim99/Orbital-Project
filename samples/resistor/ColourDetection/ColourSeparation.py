@@ -196,9 +196,15 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
         contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         for j, contour in enumerate(contours):
             #bbox[0] = x, bbox[1] = y, bbox[2] = w, bbox[3] = h
+            #Create bounding box for each contour
             bbox = cv2.boundingRect(contour)
             
             bbox_area = bbox[2]*bbox[3]
+
+            #Using Bbox area to threshold seems better than using contour area to threshold
+            #contour_area = cv2.contourArea(contour)
+            #print(f"{Colour_Table[i]}", contour_area)
+
             #Exclude contours that are too small
             if (bbox_area > MIN_AREA): #and float(bbox[2])/bbox[3] > 0.4):
                 # Create a mask for this contour
@@ -237,6 +243,7 @@ def getColourBands(image, show_blobs=False, save_blobs=False):
                     cv2.imwrite(file_name_bbox, result)
                     print(f" * wrote {file_name_bbox}")
 
+    #BoxPos format is BoxPos[:][0] = top left coordinate, BoxPos[:][1] = colour,  BoxPos[:][2] = bbox area
     return BoxPos
 
 # Prints the resistance from the given input colour bands
@@ -269,7 +276,7 @@ def getResistance(BoxPos):
         print("Not enough colour bands detected")
         return
     if numOfBands > 6:
-        print("Too many colours detected")
+        print("Too many colour bands detected")
         return
 
     print("Sorted order of all of the colour bands detected")

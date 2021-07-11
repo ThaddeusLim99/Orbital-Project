@@ -4,15 +4,15 @@ This is an app that uses an implementation of [Mask R-CNN](https://arxiv.org/abs
 
 # Detection Process
 The process of getting the resistance is the following:
-* ### Identifying and Extracting Resistor
+### Identifying and Extracting Resistor
 Isolate the resistor image using image segmentation models like Mask R-CNN. Another method of isolating the resistor is using an object detection algorithm like openCV's Cascade Classifier.
-* ### Colour Quantization & White Balancing (Optional)
+### Colour Quantization & White Balancing (Optional)
 Quantize the image to reduce the number of colours that are used to represent the colour bands. White Balancing adjusts the image to render neutral colours correctly. Results vary.
-* ### Body Colour Filtering
+### Body Colour Filtering
 Filter away the background by taking the average colour of the top and bottom row of the image and the resistor's body colour using bilateral filter and adaptive thresholding.
-* ### Colour Detection
+### Colour Detection
 Identify the colour bands using HSV boundaries of each colour of the band and save their coordinates, if the boxes overlap and are the same colour, keep only one of them
-* ### Resistance Calculation
+### Resistance Calculation
 Assuming the order is correct (from left to right), calculate the resistance using according to the [resistor colour code table](https://eepower.com/resistor-guide/resistor-standards-and-codes/resistor-color-code/#)
 
 # Mask R-CNN
@@ -23,7 +23,7 @@ Trained a model using COCO weights to detect resistors of various kinds. The tra
 
 ### Cropping out to get the isolated resistor
 ![Resistor Mask](assets/resistor_mask.png)
-S
+
 # Colour Detection
 After extracting the resistor and padding the background with black, which makes colour detection of resistor bands more accurate, we now perform colour detection. To increase accuracy, we quantize the image using [opencv's implementation of K means algorithm](https://docs.opencv.org/3.4/d1/d5c/tutorial_py_kmeans_opencv.html). The range of the number of colours that works best for us is around 64 but this also depends on the lighting. Sometimes quantizing reduces the accuracy of the detections.
 
@@ -43,17 +43,20 @@ Another method we've tried is to convert the image to gray scale, then use adapt
 
 Gold still cannot be detected.
 
-![Resistor](assets/ThirdTest/test-brown-60.png)
-![Resistor](assets/ThirdTest/test-black-40.png)
-![Resistor](assets/ThirdTest/test-red-2.png)
+![ColourBand](assets/ThirdTest/test-brown-60.png)
+![ColourBand](assets/ThirdTest/test-black-40.png)
+![ColourBand](assets/ThirdTest/test-red-2.png)
 
+![ColourBand](assets/ThirdTest/test-gold-26.png)
 ![ColourBand](assets/ThirdTest/test-orange-5.png)
-The algorithm misdetected orange and could not detect gold.
+The algorithm misdetected orange.
+
+Our resolution to the problem of detecting multiple colours for the same band is comparing the areas of the contours that occupy similar positions and take the one with the larger area. In this case, the area of the bounding box for gold is greater than orange so orange is discarded.
 
 Result:
 Number of colour bands detected: 4
-Sorted Position and Colours: [((50, 21), 'brown'), ((117, 65), 'black'), ((186, 102), 'red'), ((264, 171), 'orange')]
-Resistance: 1.00 kOhms LB: 999.50 Ohms UB: 1.00 kOhms
+Sorted Position and Colours: [((50, 21), 'brown', 4692), ((118, 65), 'black', 2856), ((186, 101), 'red', 3904), ((251, 155), 'gold', 4092)]
+Resistance: 1.00 kOhms LB: 950.00 Ohms UB: 1.05 kOhms
 
 ### Resistor with Yellow Band and Bleach coloured body
 ![Resistor](assets/SecondTest/resistor.jpg)
