@@ -24,7 +24,7 @@ android {
             }
         }
         python {
-            buildPython "C:/Users/Thaddeus/AppData/Local/Programs/Python/Python37/python.exe"
+            buildPython "C:/Users/Thaddeus/AppData/Local/Programs/Python/Python38/python.exe"
             pip {
                 install "numpy==1.17.4"
                 install "absl-py==0.12.0"
@@ -135,6 +135,7 @@ dependencies {
 
     // Material dialog dependency
     implementation 'com.afollestad.material-dialogs:core:0.9.6.0'
+    implementation 'com.google.android.material:material:1.4.0'
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'

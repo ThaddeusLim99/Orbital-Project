@@ -15,11 +15,11 @@ The image crop library is taken from https://github.com/Yalantis/uCrop.
 
 # Requirements
 
-Android Studio and an android device is required. At least 150mb of space on your mobile device.
+Android Studio and an android device is required. At least 120mb of space on your mobile device.
 
 # Instructions
 
-Clone this repo and open in Android Studio. Run on android device.
+Download the zip file and extract the files inside. Open in Android Studio. Change the python path in the gradle file. Run on android device.
 
 # App front page
 ![App Frontpage](homepage.jpeg)

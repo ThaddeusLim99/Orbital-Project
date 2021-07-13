@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,7 +52,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
     private UiHelper uiHelper = new UiHelper();
     private ImageView imageView;
 
-    //Button mCaptureBtn;
+    Button feedback;
     //ImageView mImageView;
     TextView resistor;
     TextView bands;
@@ -68,9 +69,17 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
         resistor = (TextView) findViewById(R.id.textView3);
         bands = (TextView) findViewById(R.id.textView);
         title = (TextView) findViewById(R.id.textView2);
+        feedback = (Button) findViewById(R.id.feedbackbtn);
 
         resistor.setText("Resistor Value");
         title.setText("ResCalc");
+
+        feedback.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openfeedbackform();
+            }
+        });
 
         findViewById(R.id.capture_image_btn).setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
@@ -78,6 +87,11 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
                     uiHelper.showImagePickerDialog(this, this);
         });
 
+    }
+
+    public void openfeedbackform() {
+        Intent intent = new Intent(this,feedbackform.class);
+        startActivity(intent);
     }
 
     @Override
