@@ -1,4 +1,4 @@
-package com.example.camera;
+package spartons.com.imagecropper;
 
 import org.junit.Test;
 
