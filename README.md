@@ -22,26 +22,32 @@ Android Studio and an android device is required. At least 120mb of space on you
 Download the zip file and extract the files inside. Open in Android Studio. Change the python path in the gradle file. Run on android device.
 
 # App front page
-![App Frontpage](homepage.jpeg)
+![App Frontpage](assets/homepage.jpeg)
 
 # App request of permissions
-![App request of permissions](requestingpermissions.jpeg)
+![App request of permissions](assets/requestingpermissions.jpeg)
 
 # App choice of image
-![Where to get the image from](wheretogetimage.jpeg)
+![Where to get the image from](assets/wheretogetimage.jpeg)
 
 # App cropping UI
-![App cropping UI](croppingpage.jpeg)
+![App cropping UI](assets/croppingpage.jpeg)
 
 # Cropped image
-![Cropped image](croppedimage.jpeg)
+![Cropped image](assets/croppedimage.jpeg)
 
 # App result page (correct identification)
-![App Result page (correct identification)](correctresult.jpeg)
+![App Result page (correct identification)](assets/correctresult.jpeg)
 
 # App result page (wrong identification)
-![App result page (wrong identification)](wrongresult.jpeg)
+![App result page (wrong identification)](assets/wrongresult.jpeg)
 
 # App result page (when there is error)
-![App result page (when there is error)](detectionerror.jpeg)
+![App result page (when there is error)](assets/detectionerror.jpeg)
+
+# App feedback form
+![App feedback form](assets/feedbackform.jpeg)
+
+# App resistor code reference
+![App resistor code reference](assets/resistorcode.jpeg)
 

@@ -53,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
     private ImageView imageView;
 
     Button feedback;
+    Button code;
     //ImageView mImageView;
     TextView resistor;
     TextView bands;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
         bands = (TextView) findViewById(R.id.textView);
         title = (TextView) findViewById(R.id.textView2);
         feedback = (Button) findViewById(R.id.feedbackbtn);
+        code = (Button) findViewById(R.id.codebtn);
 
         resistor.setText("Resistor Value");
         title.setText("ResCalc");
@@ -81,12 +83,24 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
             }
         });
 
+        code.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                opencode();
+            }
+        });
+
         findViewById(R.id.capture_image_btn).setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 if (uiHelper.checkSelfPermissions(this))
                     uiHelper.showImagePickerDialog(this, this);
         });
 
+    }
+
+    public void opencode() {
+        Intent intent = new Intent(this,resistorcode.class);
+        startActivity(intent);
     }
 
     public void openfeedbackform() {
