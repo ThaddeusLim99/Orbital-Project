@@ -22,7 +22,8 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning,UnusedAttribute">
-        <activity android:name=".resistorcode"></activity>
+        <activity android:name=".manual"></activity>
+        <activity android:name=".resistorcode" />
         <activity android:name=".feedbackform" />
         <activity android:name=".MainActivity">
             <intent-filter>

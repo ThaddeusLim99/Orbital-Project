@@ -24,7 +24,7 @@ android {
             }
         }
         python {
-            buildPython "C:/Users/Thaddeus/AppData/Local/Programs/Python/Python38/python.exe"
+            buildPython "C:/Users/Mloong/AppData/Local/Programs/Python/Python38/python.exe"
             pip {
                 install "numpy==1.17.4"
                 install "absl-py==0.12.0"

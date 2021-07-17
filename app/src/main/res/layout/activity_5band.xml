@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".manual">
+
+    <TextView
+        android:id="@+id/Title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:text="Number of Bands:"
+        android:layout_marginStart="8dp"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"/>
+
+    <TextView
+        android:id="@+id/Band1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@id/radioGroup"
+        android:layout_marginStart="8dp"
+        android:text="1st Band"
+        android:textSize="15sp" />
+
+    <Spinner
+        android:id="@+id/spinner1"
+        android:layout_width="149dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_below="@id/Band1"/>
+
+    <TextView
+        android:id="@+id/Band2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@id/spinner1"
+        android:layout_marginStart="8dp"
+        android:text="2nd Band"
+        android:textSize="15sp" />
+
+    <Spinner
+        android:id="@+id/spinner2"
+        android:layout_width="149dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_below="@id/Band2"/>
+
+
+    <TextView
+        android:id="@+id/Band3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@id/spinner2"
+        android:layout_marginStart="8dp"
+        android:text="3rd Band"
+        android:textSize="15sp" />
+
+    <Spinner
+        android:id="@+id/spinner3"
+        android:layout_width="149dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_below="@id/Band3"/>
+
+    <TextView
+        android:id="@+id/Multipler"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@id/spinner3"
+        android:layout_marginStart="8dp"
+        android:text="Multipler"
+        android:textSize="15sp" />
+
+    <Spinner
+        android:id="@+id/spinner4"
+        android:layout_width="149dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_below="@id/Multipler"/>
+
+    <TextView
+        android:id="@+id/Tolerance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="5dp"
+        android:layout_below="@id/spinner4"
+        android:layout_marginStart="8dp"
+        android:text="Tolerance"
+        android:textSize="15sp" />
+
+    <Spinner
+        android:id="@+id/spinner5"
+        android:layout_width="149dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="8dp"
+        android:layout_below="@id/Tolerance"/>
+
+    <RadioGroup
+        android:id="@+id/radioGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/Title"
+        android:orientation="horizontal"
+        >
+
+        <RadioButton
+            android:id="@+id/threeBandRadioBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="checkButton"
+            android:text="3 Band"/>
+
+        <RadioButton
+            android:id="@+id/fourBandRadioBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4 Band"
+            android:onClick="checkButton"/>
+
+        <RadioButton
+            android:id="@+id/fiveBandRadioBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="checkButton"
+            android:checked="true"
+            android:text="5 Band" />
+
+        <RadioButton
+            android:id="@+id/sixBandRadioBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="checkButton"
+            android:text="6 Band" />
+
+    </RadioGroup>
+
+    <Button
+        android:id="@+id/calculate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/resistorValue"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="10dp"
+        android:text="Calculate" />
+
+    <TextView
+        android:id="@+id/resistorValue"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="-6dp"
+        android:layout_marginBottom="40dp"
+        android:gravity="center"
+        android:text="Resistor Value"
+        android:textSize="40sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</RelativeLayout>
