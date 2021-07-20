@@ -166,7 +166,7 @@
         android:layout_above="@+id/resistorValue"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="16dp"
-        android:text="Calculate" />
+	android:text="Calculate"/>
 
     <TextView
         android:id="@+id/resistorValue"

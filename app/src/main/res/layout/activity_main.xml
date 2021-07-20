@@ -52,7 +52,6 @@
         android:text="Send feedback"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
@@ -62,10 +61,8 @@
         android:layout_marginTop="16dp"
         android:layout_marginBottom="16dp"
         android:gravity="center"
-
         android:text="Resistor Code"
         app:layout_constraintBottom_toTopOf="@+id/feedbackbtn"
-
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/manualbtn" />
