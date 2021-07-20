@@ -18,13 +18,7 @@ public class feedbackform extends AppCompatActivity {
         final EditText edit1 = (EditText) findViewById(R.id.edit1);
         final EditText edit2 = (EditText) findViewById(R.id.edit2);
         Button btn = (Button) findViewById(R.id.button);
-        Button homepage = (Button) findViewById(R.id.homebtn);
-        homepage.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openhome();
-            }
-        });
+
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -41,10 +35,5 @@ public class feedbackform extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    public void openhome() {
-        Intent intent = new Intent(this,MainActivity.class);
-        startActivity(intent);
     }
 }

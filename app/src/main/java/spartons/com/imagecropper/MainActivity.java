@@ -53,8 +53,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
     private ImageView imageView;
 
     Button feedback;
-    Button code;
-    //ImageView mImageView;
+    Button code, manual;
     TextView resistor;
     TextView bands;
     TextView title;
@@ -72,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
         title = (TextView) findViewById(R.id.textView2);
         feedback = (Button) findViewById(R.id.feedbackbtn);
         code = (Button) findViewById(R.id.codebtn);
+        manual = (Button) findViewById(R.id.manualbtn);
 
         resistor.setText("Resistor Value");
         title.setText("ResCalc");
@@ -90,6 +90,13 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
             }
         });
 
+        manual.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openmanual();
+            }
+        });
+
         findViewById(R.id.capture_image_btn).setOnClickListener(v -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
                 if (uiHelper.checkSelfPermissions(this))
@@ -98,13 +105,21 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
 
     }
 
+    //opens resistor code reference page
     public void opencode() {
         Intent intent = new Intent(this,resistorcode.class);
         startActivity(intent);
     }
 
+    //opens feedback form pagr
     public void openfeedbackform() {
         Intent intent = new Intent(this,feedbackform.class);
+        startActivity(intent);
+    }
+
+    //opens manual resistor value calculation page
+    public void openmanual() {
+        Intent intent = new Intent(this,manual.class);
         startActivity(intent);
     }
 
@@ -152,6 +167,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
                 Uri uri = UCrop.getOutput(data);
                 showImage(uri);
                 Log.d("myTAG", "going to colour detect");
+                //starts colour detection process after image croppiing
                 colourdetection(uri);
             }
         } else if (requestCode == PICK_IMAGE_GALLERY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
@@ -249,6 +265,7 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
                 .start(this);
     }
 
+    //get string from a bitmap of an image for input into python file
     private String getStringImage(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG,100,baos);
@@ -259,54 +276,41 @@ public class MainActivity extends AppCompatActivity implements IImagePickerListe
         return encodedImage;
     }
 
+    //entire colour detection pprocess
     private void colourdetection(Uri image_uri){
         Bitmap bitmap = null;
         try {
+            //get bit map from image uri
             bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), image_uri);
-            //mImageView.setImageBitmap(bitmap);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         //Log.d("myTAG", "bitmap successfully stored");
+        //pass string to a string variable
         imageString = getStringImage(bitmap);
-        //now pass image string to python script
         //Log.d("myTAG", "bitmap successfully stored");
-
+        //start Chaquopy
         if(! Python.isStarted()) {
             Python.start(new AndroidPlatform(this));
         }
         final Python pyy = Python.getInstance();
-
-        PyObject pyoo = pyy.getModule("samples.resistor.ColourDetection.ColourSeparation");
+        //find python file
+        PyObject pyoo = pyy.getModule("ColourSeparation");
         try {
+            //calls main function in python file and inputs imageString, returns a list
             List<PyObject> objj = pyoo.callAttr("main", imageString).asList();
             Log.d("myTAG", "objj is not null");
-            String strr = objj.get(0).toString();
-            String strrr = objj.get(1).toString();
-            resistor.setText(strr);
-            bands.setText(strrr);
+            String resvaluestr = objj.get(0).toString();
+            String bandstr = objj.get(1).toString();
+            resistor.setText(resvaluestr);
+            bands.setText(bandstr);
         } catch(Exception e){
             Log.d("myTAG", "objj is null");
             //ImageView.setImageURI(image_uri);
             resistor.setText("Detection error! Try Again.");
             bands.setText("-");
         }
-        /*
-        if (Objects.isNull(objj)){
-            Log.d("myTAG", "objj is null");
-            //ImageView.setImageURI(image_uri);
-            resistor.setText("Detection error! Try Again.");
-            bands.setText("-");
-        }else{
-            Log.d("myTAG", "objj is not null");
-            String strr = objj.get(0).toString();
-            String strrr = objj.get(1).toString();
-            resistor.setText(strr);
-            bands.setText(strrr);
-        }
-         */
-
     }
 }

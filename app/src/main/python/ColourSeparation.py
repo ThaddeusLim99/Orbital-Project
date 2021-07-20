@@ -352,6 +352,7 @@ def getResistance(BoxPos):
     elif numOfBands == 6:
         print("Resistance:", result[0], "LB:", result[1], "UB:", result[2], "PPM:", results[3])
 
+    #returns resistor value and the colours detected respectively
     return result[0], BoxPos
 
 def main(mask):
@@ -361,8 +362,7 @@ def main(mask):
     np_data = np.fromstring(decoded_data,np.uint8)
     #convert to cv2 image
     image = cv2.imdecode(np_data,cv2.IMREAD_UNCHANGED)
-    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\samples\\resistor\\images\\11-mask0.jpg')
-    #image = cv2.imread('C:\\Users\\Mloong\\Documents\\Code\\OrbitalProject\\Mask_RCNN_TF2_Compatible\\assets\\resistor_mask.png')
+
     if image is None:
         print("Image not found")
         exit(-1)

@@ -9,7 +9,7 @@ The image crop library is taken from https://github.com/Yalantis/uCrop.
 # Notes
 
 1. The app is still in its testing stage. Thus the app may crash occasionally. 
-2. The app is actually not in its most optimised state due to the use of Chaquopy. App may be able to be reduced in size further once code is converted to java. Furthermore, conversion of python file to .pyc format may be possible now due to the previous issue of incompatible python version with the Chaquopy tensorflow library is no longer present. This may mean further downsizing of the app.
+2. The app is actually not in its most optimised state due to the use of Chaquopy. App may be able to be reduced in size further once code is converted to java. 
 3. This app is using a free  and approved unlicensed version of Chaquopy. As stated in the commpany's website, the app will only work for 5 minutes from the point of activation of the app. Users will thus have to force stop the app in their phone settings to reactivate the app for further use.
 4. Python code within this branch may or may not be up to date with the mrcnntf2 branch.
 
@@ -50,4 +50,7 @@ Download the zip file and extract the files inside. Open in Android Studio. Chan
 
 # App resistor code reference
 ![App resistor code reference](assets/resistorcode.jpeg)
+
+# App manual resistor calculator
+![App manual resistor calculator](assets/manual.jpeg)
 
