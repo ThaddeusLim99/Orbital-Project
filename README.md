@@ -7,7 +7,7 @@ The process of getting the resistance is the following:
 ### Identifying and Extracting Resistor
 Isolate the resistor image using image segmentation models like Mask R-CNN. Another method of isolating the resistor is using an object detection algorithm like openCV's Cascade Classifier.
 ### Colour Quantization & White Balancing (Optional)
-Quantize the image to reduce the number of colours that are used to represent the colour bands. White Balancing adjusts the image to render neutral colours correctly. Results vary.
+Quantize the image to reduce the number of colours that are used to represent the colour bands. White Balancing adjusts the image to render neutral colours correctly. Results vary. The white balancing algorithm we are using is taken from [here](https://github.com/mahmoudnafifi/WB_sRGB).
 ### Body Colour Filtering
 Filter away the background by taking the average colour of the top and bottom row of the image and the resistor's body colour using bilateral filter and adaptive thresholding.
 ### Colour Detection
