@@ -6,6 +6,8 @@ This is updated version of the app. The original app can be found in the android
 
 The image crop library is taken from https://github.com/Yalantis/uCrop.
 
+See the PDF file named "Orbital milestone 3" for more imformation.
+
 # Notes
 
 1. The app is actually not in its most optimised state due to the use of Chaquopy. App may be able to be reduced in size further once code is converted to java. 
